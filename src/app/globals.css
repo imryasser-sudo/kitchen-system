@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #e0e5ec;
+  --foreground: #2d3748;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  direction: rtl;
+}
+
+@layer utilities {
+  .neu-flat {
+    background: #e0e5ec;
+    box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
+  }
+  
+  .neu-pressed {
+    background: #e0e5ec;
+    box-shadow: inset 6px 6px 10px 0 rgba(163, 177, 198, 0.7), inset -6px -6px 10px 0 rgba(255, 255, 255, 0.8);
+  }
+  
+  .interactive {
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .interactive:hover {
+    box-shadow: inset 2px 2px 5px 0 rgba(163, 177, 198, 0.5), inset -2px -2px 5px 0 rgba(255, 255, 255, 0.5);
+    transform: scale(0.98);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+  }
+  
+  .dir-ltr {
+    direction: ltr;
+  }
+}
+
+@layer base {
+  * {
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  
+  input[type="number"],
+  input[type="date"],
+  .en-num {
+    direction: ltr !important;
+    unicode-bidi: isolate;
+  }
+  
+  input[type=number]::-webkit-inner-spin-button, 
+  input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+  }
+}
