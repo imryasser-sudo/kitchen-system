@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { 
-  ClipboardList, Plus, Minus, Loader2, AlertCircle, Store, CalendarClock, 
+  Search, ClipboardList, Plus, Minus, Loader2, AlertCircle, Store, CalendarClock, 
   RotateCcw, Send, Edit, X, Package, AlertTriangle, Gift, CalendarRange, Hash,
   Check, Trash2, ListChecks, Clock, ChevronDown, ChevronUp, Layers, ArrowRightLeft, 
   Wifi, WifiOff, Soup, Sandwich, UtensilsCrossed, Beef, CupSoda, Pizza, Sparkles, Building2, LayoutGrid,
@@ -63,68 +63,68 @@ const getQtyColors = (qty: number, isFocused: boolean) => {
   
   if (qty === 0) return {
      wrapper: isFocused 
-        ? `bg-indigo-50/40 dark:bg-[#1a1a2e] border-2 border-indigo-600 dark:border-indigo-400 shadow-[0_25px_60px_-12px_rgba(99,102,241,0.6)] dark:shadow-[0_25px_60px_-12px_rgba(99,102,241,0.8)] scale-[1.08] -translate-y-3 z-50 ring-[5px] ring-indigo-500/30 dark:ring-indigo-400/20 ${baseTransition}` 
-        : `bg-white dark:bg-[#121214] shadow-sm border border-slate-200 dark:border-white/5 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-[#161622] hover:scale-[1.04] hover:-translate-y-1 hover:shadow-[0_15px_35px_-10px_rgba(99,102,241,0.4)] hover:z-40 ${baseTransition}`,
+        ? `bg-indigo-50/40 dark:bg-[#1a1a2e] border-2 border-indigo-600 dark:border-indigo-400 shadow-[0_25px_60px_-12px_rgba(99,102,241,0.6)] dark:shadow-[0_25px_60px_-12px_rgba(99,102,241,0.8)] scale-[1.05] md:scale-[1.08] -translate-y-2 md:-translate-y-3 z-50 ring-[5px] ring-indigo-500/30 dark:ring-indigo-400/20 ${baseTransition}` 
+        : `bg-white dark:bg-[#121214] shadow-sm border border-slate-200 dark:border-white/5 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-[#161622] hover:scale-[1.02] md:hover:scale-[1.04] hover:-translate-y-1 hover:shadow-[0_15px_35px_-10px_rgba(99,102,241,0.4)] hover:z-40 ${baseTransition}`,
      capsuleBg: isFocused 
         ? "bg-white/90 dark:bg-[#050505] border-2 border-indigo-300 dark:border-indigo-500/50 shadow-md" 
         : "bg-slate-50 dark:bg-[#050505] border border-transparent group-hover:border-indigo-200/80 dark:group-hover:border-indigo-500/30 group-hover:bg-white dark:group-hover:bg-[#0a0a0c] transition-all duration-200",
-     input: isFocused ? "text-indigo-700 dark:text-white font-black text-2xl scale-110 drop-shadow-md" : "text-slate-600 dark:text-slate-400 font-bold group-hover:text-indigo-600 dark:group-hover:text-indigo-300 group-hover:scale-110 transition-all duration-200",
+     input: isFocused ? "text-indigo-700 dark:text-white font-black text-xl md:text-2xl scale-110 drop-shadow-md" : "text-slate-600 dark:text-slate-400 font-bold group-hover:text-indigo-600 dark:group-hover:text-indigo-300 group-hover:scale-110 transition-all duration-200",
      btnText: isFocused ? "text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-white/10" : "text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 hover:bg-slate-200 dark:hover:bg-white/5 transition-colors duration-200",
-     title: isFocused ? "text-indigo-800 dark:text-white font-black scale-110 origin-right drop-shadow-sm" : "text-slate-800 dark:text-white/90 font-bold group-hover:text-indigo-700 dark:group-hover:text-indigo-300 group-hover:scale-105 origin-right transition-all duration-200",
+     title: isFocused ? "text-indigo-800 dark:text-white font-black scale-105 md:scale-110 origin-right drop-shadow-sm" : "text-slate-800 dark:text-white/90 font-bold group-hover:text-indigo-700 dark:group-hover:text-indigo-300 group-hover:scale-[1.02] md:group-hover:scale-105 origin-right transition-all duration-200",
      subtitle: isFocused ? "text-indigo-600 dark:text-indigo-300 font-bold" : "text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400/80 transition-colors duration-200",
      iconBg: isFocused 
-        ? "bg-indigo-600 dark:bg-indigo-500 text-white rounded-[0.8rem] shadow-[0_8px_20px_rgba(99,102,241,0.6)] border border-indigo-400 scale-[1.15] rotate-6" 
+        ? "bg-indigo-600 dark:bg-indigo-500 text-white rounded-[0.8rem] shadow-[0_8px_20px_rgba(99,102,241,0.6)] border border-indigo-400 scale-110 md:scale-[1.15] rotate-6" 
         : "bg-slate-50 dark:bg-[#050505] grayscale-[0.4] group-hover:grayscale-0 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 rounded-[0.8rem] border border-slate-200 dark:border-white/5 group-hover:border-indigo-200 dark:group-hover:border-indigo-500/30 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all duration-200",
   };
   
   if (qty <= 10) return { 
-     wrapper: `bg-teal-50/60 dark:bg-[#112a28] border-2 ${isFocused ? 'border-teal-500 shadow-[0_25px_60px_-12px_rgba(20,184,166,0.6)] scale-[1.08] -translate-y-3 z-50 ring-[5px] ring-teal-500/40' : 'border-teal-400 dark:border-teal-500/50 shadow-[0_8px_25px_-8px_rgba(20,184,166,0.3)] hover:shadow-[0_15px_35px_-10px_rgba(20,184,166,0.5)] hover:scale-[1.04] hover:-translate-y-1 hover:border-teal-500 z-40'} ${baseTransition}`, 
+     wrapper: `bg-teal-50/60 dark:bg-[#112a28] border-2 ${isFocused ? 'border-teal-500 shadow-[0_25px_60px_-12px_rgba(20,184,166,0.6)] scale-[1.05] md:scale-[1.08] -translate-y-2 md:-translate-y-3 z-50 ring-[5px] ring-teal-500/40' : 'border-teal-400 dark:border-teal-500/50 shadow-[0_8px_25px_-8px_rgba(20,184,166,0.3)] hover:shadow-[0_15px_35px_-10px_rgba(20,184,166,0.5)] hover:scale-[1.02] md:hover:scale-[1.04] hover:-translate-y-1 hover:border-teal-500 z-40'} ${baseTransition}`, 
      capsuleBg: isFocused ? "bg-white/90 dark:bg-[#050505] border-2 border-teal-400 dark:border-teal-500/60 shadow-md" : "bg-white dark:bg-[#050505] border border-teal-200 dark:border-teal-500/30 shadow-inner", 
-     input: isFocused ? "text-teal-800 dark:text-teal-200 font-black text-2xl scale-110 drop-shadow-md" : "text-teal-700 dark:text-teal-300 font-black group-hover:scale-110 transition-all",
+     input: isFocused ? "text-teal-800 dark:text-teal-200 font-black text-xl md:text-2xl scale-110 drop-shadow-md" : "text-teal-700 dark:text-teal-300 font-black group-hover:scale-110 transition-all",
      btnText: "text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-500/20 transition-colors", 
-     title: `font-black drop-shadow-sm transition-all origin-right ${isFocused ? 'text-teal-900 dark:text-white scale-110' : 'text-teal-800 dark:text-teal-200 group-hover:scale-105 group-hover:text-teal-700 dark:group-hover:text-white'}`, 
+     title: `font-black drop-shadow-sm transition-all origin-right ${isFocused ? 'text-teal-900 dark:text-white scale-105 md:scale-110' : 'text-teal-800 dark:text-teal-200 group-hover:scale-[1.02] md:group-hover:scale-105 group-hover:text-teal-700 dark:group-hover:text-white'}`, 
      subtitle: "text-teal-600 dark:text-teal-400 font-bold transition-colors", 
-     iconBg: `rounded-[0.8rem] transition-all ${isFocused ? 'bg-teal-600 dark:bg-teal-500 shadow-[0_8px_20px_rgba(20,184,166,0.6)] border border-teal-400 text-white scale-[1.15] rotate-6' : 'bg-teal-100 dark:bg-teal-500/20 border border-teal-300 dark:border-teal-500/30 shadow-sm text-teal-600 dark:text-teal-400 group-hover:scale-110 group-hover:rotate-3'}`,
+     iconBg: `rounded-[0.8rem] transition-all ${isFocused ? 'bg-teal-600 dark:bg-teal-500 shadow-[0_8px_20px_rgba(20,184,166,0.6)] border border-teal-400 text-white scale-110 md:scale-[1.15] rotate-6' : 'bg-teal-100 dark:bg-teal-500/20 border border-teal-300 dark:border-teal-500/30 shadow-sm text-teal-600 dark:text-teal-400 group-hover:scale-110 group-hover:rotate-3'}`,
   };
 
   if (qty <= 50) return { 
-     wrapper: `bg-violet-50/60 dark:bg-[#1a1528] border-2 ${isFocused ? 'border-violet-500 shadow-[0_25px_60px_-12px_rgba(139,92,246,0.6)] scale-[1.08] -translate-y-3 z-50 ring-[5px] ring-violet-500/40' : 'border-violet-400 dark:border-violet-500/50 shadow-[0_8px_25px_-8px_rgba(139,92,246,0.3)] hover:shadow-[0_15px_35px_-10px_rgba(139,92,246,0.5)] hover:scale-[1.04] hover:-translate-y-1 hover:border-violet-500 z-40'} ${baseTransition}`, 
+     wrapper: `bg-violet-50/60 dark:bg-[#1a1528] border-2 ${isFocused ? 'border-violet-500 shadow-[0_25px_60px_-12px_rgba(139,92,246,0.6)] scale-[1.05] md:scale-[1.08] -translate-y-2 md:-translate-y-3 z-50 ring-[5px] ring-violet-500/40' : 'border-violet-400 dark:border-violet-500/50 shadow-[0_8px_25px_-8px_rgba(139,92,246,0.3)] hover:shadow-[0_15px_35px_-10px_rgba(139,92,246,0.5)] hover:scale-[1.02] md:hover:scale-[1.04] hover:-translate-y-1 hover:border-violet-500 z-40'} ${baseTransition}`, 
      capsuleBg: isFocused ? "bg-white/90 dark:bg-[#050505] border-2 border-violet-400 dark:border-violet-500/60 shadow-md" : "bg-white dark:bg-[#050505] border border-violet-200 dark:border-violet-500/30 shadow-inner", 
-     input: isFocused ? "text-violet-800 dark:text-violet-200 font-black text-2xl scale-110 drop-shadow-md" : "text-violet-700 dark:text-violet-300 font-black group-hover:scale-110 transition-all",
+     input: isFocused ? "text-violet-800 dark:text-violet-200 font-black text-xl md:text-2xl scale-110 drop-shadow-md" : "text-violet-700 dark:text-violet-300 font-black group-hover:scale-110 transition-all",
      btnText: "text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-colors", 
-     title: `font-black drop-shadow-sm transition-all origin-right ${isFocused ? 'text-violet-900 dark:text-white scale-110' : 'text-violet-800 dark:text-violet-200 group-hover:scale-105 group-hover:text-violet-700 dark:group-hover:text-white'}`, 
+     title: `font-black drop-shadow-sm transition-all origin-right ${isFocused ? 'text-violet-900 dark:text-white scale-105 md:scale-110' : 'text-violet-800 dark:text-violet-200 group-hover:scale-[1.02] md:group-hover:scale-105 group-hover:text-violet-700 dark:group-hover:text-white'}`, 
      subtitle: "text-violet-600 dark:text-violet-400 font-bold transition-colors", 
-     iconBg: `rounded-[0.8rem] transition-all ${isFocused ? 'bg-violet-600 dark:bg-violet-500 shadow-[0_8px_20px_rgba(139,92,246,0.6)] border border-violet-400 text-white scale-[1.15] rotate-6' : 'bg-violet-100 dark:bg-violet-500/20 border border-violet-300 dark:border-violet-500/30 shadow-sm text-violet-600 dark:text-violet-400 group-hover:scale-110 group-hover:rotate-3'}`,
+     iconBg: `rounded-[0.8rem] transition-all ${isFocused ? 'bg-violet-600 dark:bg-violet-500 shadow-[0_8px_20px_rgba(139,92,246,0.6)] border border-violet-400 text-white scale-110 md:scale-[1.15] rotate-6' : 'bg-violet-100 dark:bg-violet-500/20 border border-violet-300 dark:border-violet-500/30 shadow-sm text-violet-600 dark:text-violet-400 group-hover:scale-110 group-hover:rotate-3'}`,
   };
 
   if (qty <= 100) return { 
-     wrapper: `bg-amber-50/60 dark:bg-[#281d11] border-2 ${isFocused ? 'border-amber-500 shadow-[0_25px_60px_-12px_rgba(245,158,11,0.6)] scale-[1.08] -translate-y-3 z-50 ring-[5px] ring-amber-500/40' : 'border-amber-400 dark:border-amber-500/50 shadow-[0_8px_25px_-8px_rgba(245,158,11,0.3)] hover:shadow-[0_15px_35px_-10px_rgba(245,158,11,0.5)] hover:scale-[1.04] hover:-translate-y-1 hover:border-amber-500 z-40'} ${baseTransition}`, 
+     wrapper: `bg-amber-50/60 dark:bg-[#281d11] border-2 ${isFocused ? 'border-amber-500 shadow-[0_25px_60px_-12px_rgba(245,158,11,0.6)] scale-[1.05] md:scale-[1.08] -translate-y-2 md:-translate-y-3 z-50 ring-[5px] ring-amber-500/40' : 'border-amber-400 dark:border-amber-500/50 shadow-[0_8px_25px_-8px_rgba(245,158,11,0.3)] hover:shadow-[0_15px_35px_-10px_rgba(245,158,11,0.5)] hover:scale-[1.02] md:hover:scale-[1.04] hover:-translate-y-1 hover:border-amber-500 z-40'} ${baseTransition}`, 
      capsuleBg: isFocused ? "bg-white/90 dark:bg-[#050505] border-2 border-amber-400 dark:border-amber-500/60 shadow-md" : "bg-white dark:bg-[#050505] border border-amber-200 dark:border-amber-500/30 shadow-inner", 
-     input: isFocused ? "text-amber-800 dark:text-amber-200 font-black text-2xl scale-110 drop-shadow-md" : "text-amber-700 dark:text-amber-300 font-black group-hover:scale-110 transition-all",
+     input: isFocused ? "text-amber-800 dark:text-amber-200 font-black text-xl md:text-2xl scale-110 drop-shadow-md" : "text-amber-700 dark:text-amber-300 font-black group-hover:scale-110 transition-all",
      btnText: "text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors", 
-     title: `font-black drop-shadow-sm transition-all origin-right ${isFocused ? 'text-amber-900 dark:text-white scale-110' : 'text-amber-800 dark:text-amber-200 group-hover:scale-105 group-hover:text-amber-700 dark:group-hover:text-white'}`, 
+     title: `font-black drop-shadow-sm transition-all origin-right ${isFocused ? 'text-amber-900 dark:text-white scale-105 md:scale-110' : 'text-amber-800 dark:text-amber-200 group-hover:scale-[1.02] md:group-hover:scale-105 group-hover:text-amber-700 dark:group-hover:text-white'}`, 
      subtitle: "text-amber-600 dark:text-amber-400 font-bold transition-colors", 
-     iconBg: `rounded-[0.8rem] transition-all ${isFocused ? 'bg-amber-500 dark:bg-amber-500 shadow-[0_8px_20px_rgba(245,158,11,0.6)] border border-amber-400 text-white scale-[1.15] rotate-6' : 'bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/30 shadow-sm text-amber-600 dark:text-amber-400 group-hover:scale-110 group-hover:rotate-3'}`,
+     iconBg: `rounded-[0.8rem] transition-all ${isFocused ? 'bg-amber-500 dark:bg-amber-500 shadow-[0_8px_20px_rgba(245,158,11,0.6)] border border-amber-400 text-white scale-110 md:scale-[1.15] rotate-6' : 'bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/30 shadow-sm text-amber-600 dark:text-amber-400 group-hover:scale-110 group-hover:rotate-3'}`,
   };
 
   return { 
-     wrapper: `bg-rose-50/60 dark:bg-[#281318] border-2 ${isFocused ? 'border-rose-500 shadow-[0_25px_60px_-12px_rgba(244,63,94,0.6)] scale-[1.08] -translate-y-3 z-50 ring-[5px] ring-rose-500/40 animate-none' : 'border-rose-400 dark:border-rose-500/50 shadow-[0_8px_25px_-8px_rgba(244,63,94,0.3)] hover:shadow-[0_15px_35px_-10px_rgba(244,63,94,0.5)] hover:scale-[1.04] hover:-translate-y-1 hover:border-rose-500 z-40 animate-pulse hover:animate-none'} ${baseTransition}`, 
+     wrapper: `bg-rose-50/60 dark:bg-[#281318] border-2 ${isFocused ? 'border-rose-500 shadow-[0_25px_60px_-12px_rgba(244,63,94,0.6)] scale-[1.05] md:scale-[1.08] -translate-y-2 md:-translate-y-3 z-50 ring-[5px] ring-rose-500/40 animate-none' : 'border-rose-400 dark:border-rose-500/50 shadow-[0_8px_25px_-8px_rgba(244,63,94,0.3)] hover:shadow-[0_15px_35px_-10px_rgba(244,63,94,0.5)] hover:scale-[1.02] md:hover:scale-[1.04] hover:-translate-y-1 hover:border-rose-500 z-40 animate-pulse hover:animate-none'} ${baseTransition}`, 
      capsuleBg: isFocused ? "bg-white/90 dark:bg-[#050505] border-2 border-rose-400 dark:border-rose-500/60 shadow-md" : "bg-white dark:bg-[#050505] border border-rose-200 dark:border-rose-500/30 shadow-inner", 
-     input: isFocused ? "text-rose-800 dark:text-rose-200 font-black text-2xl scale-110 drop-shadow-md" : "text-rose-700 dark:text-rose-300 font-black group-hover:scale-110 transition-all",
+     input: isFocused ? "text-rose-800 dark:text-rose-200 font-black text-xl md:text-2xl scale-110 drop-shadow-md" : "text-rose-700 dark:text-rose-300 font-black group-hover:scale-110 transition-all",
      btnText: "text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors", 
-     title: `font-black drop-shadow-sm transition-all origin-right ${isFocused ? 'text-rose-900 dark:text-white scale-110' : 'text-rose-800 dark:text-rose-200 group-hover:scale-105 group-hover:text-rose-700 dark:group-hover:text-white'}`, 
+     title: `font-black drop-shadow-sm transition-all origin-right ${isFocused ? 'text-rose-900 dark:text-white scale-105 md:scale-110' : 'text-rose-800 dark:text-rose-200 group-hover:scale-[1.02] md:group-hover:scale-105 group-hover:text-rose-700 dark:group-hover:text-white'}`, 
      subtitle: "text-rose-600 dark:text-rose-400 font-bold transition-colors", 
-     iconBg: `rounded-[0.8rem] transition-all ${isFocused ? 'bg-rose-600 dark:bg-rose-500 shadow-[0_8px_20px_rgba(244,63,94,0.6)] border border-rose-400 text-white scale-[1.15] rotate-6' : 'bg-rose-100 dark:bg-rose-500/20 border border-rose-300 dark:border-rose-500/30 shadow-sm text-rose-600 dark:text-rose-400 group-hover:scale-110 group-hover:rotate-3'}`,
+     iconBg: `rounded-[0.8rem] transition-all ${isFocused ? 'bg-rose-600 dark:bg-rose-500 shadow-[0_8px_20px_rgba(244,63,94,0.6)] border border-rose-400 text-white scale-110 md:scale-[1.15] rotate-6' : 'bg-rose-100 dark:bg-rose-500/20 border border-rose-300 dark:border-rose-500/30 shadow-sm text-rose-600 dark:text-rose-400 group-hover:scale-110 group-hover:rotate-3'}`,
   };
 };
 
 const getDynamicSizing = (count: number) => {
   if (count <= 12) {
     return {
-      gridCols: "grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3.5",
-      cardPadding: "p-3",
-      iconSize: "w-10 h-10 md:w-12 md:h-12 text-xl",
-      titleSize: "text-[14px] md:text-[15px] leading-tight", 
+      gridCols: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-3.5",
+      cardPadding: "p-2.5 md:p-3",
+      iconSize: "w-10 h-10 md:w-12 md:h-12 text-xl md:text-2xl",
+      titleSize: "text-[13px] md:text-[15px] leading-tight", 
       subTitleSize: "text-[10px] md:text-[11px]",
       btnHeight: "h-9 md:h-10",
       btnWidth: "w-9 md:w-10",
@@ -135,7 +135,7 @@ const getDynamicSizing = (count: number) => {
     };
   } else if (count <= 30) { 
     return {
-      gridCols: "grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3",
+      gridCols: "grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-2.5 md:gap-3",
       cardPadding: "p-2 md:p-2.5",
       iconSize: "w-8 h-8 md:w-9 md:h-9 text-lg", 
       titleSize: "text-[12px] md:text-[14px] leading-tight", 
@@ -149,7 +149,7 @@ const getDynamicSizing = (count: number) => {
     };
   } else {
     return {
-      gridCols: "grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 gap-2.5",
+      gridCols: "grid-cols-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 2xl:grid-cols-12 gap-2 md:gap-2.5",
       cardPadding: "p-1.5 md:p-2",
       iconSize: "w-6 h-6 md:w-8 md:h-8 text-base",
       titleSize: "text-[11px] md:text-[12px] leading-tight line-clamp-1", 
@@ -302,6 +302,7 @@ export default function RequestsPage() {
   const [orderNotes, setOrderNotes] = useState('');
   const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [searchQuery, setSearchQuery] = useState('');
   
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [isDraftRestored, setIsDraftRestored] = useState(false);
@@ -419,7 +420,6 @@ export default function RequestsPage() {
       .order('sequence');
       if (itemsError) throw new Error("خطأ في جلب الأصناف: " + itemsError.message);
 
-      // 💡 تم استرجاع الحقول إلى أوامر القاعدة 💡
       const { data: ordersData } = await supabase
         .from('orders')
         .select(`
@@ -466,7 +466,6 @@ export default function RequestsPage() {
       let exactDuplicateFound = false;
       let anyOrderFound = false;
 
-      // 💡 تم استرجاع الفحص لأن الحقول صارت موجودة 💡
       let branchQueryAny = supabase
         .from('orders')
         .select('id, order_type')
@@ -571,8 +570,10 @@ export default function RequestsPage() {
   }, [groupedItems, selectedCategoryName]);
 
   const displayedItems = useMemo(() => {
-    return activeCategory ? activeCategory.items : [];
-  }, [activeCategory]);
+    let raw = activeCategory ? activeCategory.items : [];
+    if (searchQuery) raw = raw.filter((i: any) => i.name.includes(searchQuery));
+    return raw;
+  }, [activeCategory, searchQuery]);
 
   const dynamicSizing = useMemo(() => {
     return getDynamicSizing(displayedItems.length);
@@ -765,7 +766,6 @@ export default function RequestsPage() {
     if (!selectedAgency) return alert("يرجى اختيار الوكالة أولاً.");
     if (!selectedBranch) return alert("يرجى اختيار الفرع.");
     
-    // 💡 تم إرجاع التحقق من الفاتورة بناءً على طلبك 💡
     if (!invoiceNumber.trim()) return alert("رقم الفاتورة مطلوب لحفظ الطلبية.");
     
     if (invoiceWarning) return alert("يرجى تصحيح رقم الفاتورة أو تغييره. الرقم مدخل مسبقاً.");
@@ -825,7 +825,6 @@ export default function RequestsPage() {
            finalCreatedAt = dayjs(orderDate).hour(dayjs().hour()).minute(dayjs().minute()).toISOString();
         }
 
-        // 💡 تم استرجاع حقول التحديث 💡
         const { error: orderError } = await supabase
           .from('orders')
           .update({
@@ -860,7 +859,6 @@ export default function RequestsPage() {
         setEditingOrderId(null);
 
       } else {
-        // 💡 تم استرجاع حقول الإدخال 💡
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
           .insert([{ 
@@ -932,7 +930,7 @@ export default function RequestsPage() {
 
   return (
     <div className={isDark ? 'dark' : ''}>
-      <div className={`flex flex-col h-[calc(100vh-1.5rem)] overflow-hidden font-sans transition-colors duration-200 ${isZenMode ? 'bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-300' : 'bg-slate-100 dark:bg-[#050505] text-slate-900 dark:text-white'}`} dir="rtl">
+      <div className={`flex flex-col min-h-screen overflow-x-hidden font-sans transition-colors duration-200 ${isZenMode ? 'bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-300' : 'bg-slate-100 dark:bg-[#050505] text-slate-900 dark:text-white'}`} dir="rtl">
         
         {/* 🟢 النافذة المنسدلة (سجل الطلبيات) بتقنية Portal 🟢 */}
         {isClient && createPortal(
@@ -1062,10 +1060,11 @@ export default function RequestsPage() {
           />
         ))}
 
-        <div className={`shrink-0 bg-white/80 dark:bg-[#050505]/50 backdrop-blur-xl z-30 w-full transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isHeaderCollapsed ? 'pt-2 pb-0' : 'pt-3 pb-2'} ${isZenMode ? 'hidden' : 'block'}`}>
+        {/* 🟢 الهيدر صار جزء من التسلسل الطبيعي (مو ثابت) 🟢 */}
+        <div className={`w-full transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isHeaderCollapsed ? 'pt-2 pb-0' : 'pt-3 pb-2'} ${isZenMode ? 'hidden' : 'block'}`}>
           <div className="max-w-[120rem] mx-auto px-2 md:px-4">
             
-            <div className={`bg-white dark:bg-[#121214] rounded-[1.5rem] shadow-md dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/10 relative transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isHeaderCollapsed ? 'mb-1' : 'mb-3'}`}>
+            <div className={`bg-white dark:bg-[#121214] rounded-[1.5rem] shadow-sm dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/10 relative transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isHeaderCollapsed ? 'mb-1' : 'mb-3'}`}>
               
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-3 md:p-4 gap-3 z-20 relative bg-white dark:bg-[#121214] rounded-t-[1.5rem] rounded-b-[1.5rem]">
                 
@@ -1127,11 +1126,12 @@ export default function RequestsPage() {
                 </div>
 
                 <div className="flex items-center bg-slate-50 dark:bg-[#050505] p-1.5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-inner w-full md:w-auto">
+                   <Search className="w-4 h-4 ml-2 text-slate-400 shrink-0" />
                    <input 
-                     type="text" value={orderNotes} onChange={(e) => setOrderNotes(e.target.value)} 
-                     placeholder="ملاحظات (اختياري)..." 
+                     type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} 
+                     placeholder="ابحث عن صنف..." 
                      onFocus={() => setIsHeaderCollapsed(false)} 
-                     className="h-9 md:h-11 flex-1 md:w-40 xl:w-48 bg-transparent px-3 outline-none font-bold text-[10px] md:text-[11px] text-slate-700 dark:text-slate-300 text-right focus:bg-white dark:focus:bg-white/5 focus:ring-4 focus:ring-indigo-500/10 rounded-xl transition-all duration-300 placeholder:text-slate-400 dark:placeholder:text-slate-600" 
+                     className="h-9 md:h-11 flex-1 md:w-40 xl:w-48 bg-transparent pr-1 outline-none font-bold text-[10px] md:text-[11px] text-slate-700 dark:text-slate-300 text-right focus:bg-white dark:focus:bg-white/5 focus:ring-4 focus:ring-indigo-500/10 rounded-xl transition-all duration-300 placeholder:text-slate-400 dark:placeholder:text-slate-600" 
                    />
                    <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1.5 shrink-0"></div>
 
@@ -1278,10 +1278,11 @@ export default function RequestsPage() {
               </div>
             </div>
 
+            {/* 🟢 شريط الأقسام (Categories) صار Scrollable بالموبايل 🟢 */}
             <div className={`pt-2 pb-1 flex items-center justify-between gap-4 px-1 ${isZenMode ? 'hidden' : 'flex'}`}>
-              <div className="flex flex-wrap gap-2.5 flex-1">
+              <div className="flex overflow-x-auto hide-scrollbar gap-2.5 flex-1 w-full pb-2 px-1">
                 {!selectedAgency ? (
-                  <div className="text-slate-400 dark:text-slate-600 font-bold text-[11px] w-full px-1">يرجى اختيار الوكالة لعرض أقسام المواد...</div>
+                  <div className="text-slate-400 dark:text-slate-600 font-bold text-[11px] w-full px-1 py-1">يرجى اختيار الوكالة لعرض أقسام المواد...</div>
                 ) : (
                   groupedItems.map((category: any) => {
                     const totalItemsCount = category.items.length;
@@ -1293,7 +1294,7 @@ export default function RequestsPage() {
                     return (
                       <button
                         key={category.name} type="button" onClick={() => setSelectedCategoryName(category.name)}
-                        className={`flex items-center gap-2 px-3.5 py-2 md:px-5 md:py-2.5 rounded-[1.1rem] font-black text-[11px] md:text-[13px] transition-all duration-300 border outline-none ${
+                        className={`shrink-0 flex items-center gap-2 px-3.5 py-2 md:px-5 md:py-2.5 rounded-[1.1rem] font-black text-[11px] md:text-[13px] transition-all duration-300 border outline-none ${
                           isSelected 
                           ? "bg-white dark:bg-[#121214] text-slate-900 dark:text-white border-slate-300 dark:border-white/20 shadow-md dark:shadow-[0_8px_25px_-5px_rgba(0,0,0,0.5)] ring-2 ring-slate-200 dark:ring-white/10 scale-[1.03] z-10" 
                           : activeItemsCount > 0 
@@ -1323,7 +1324,7 @@ export default function RequestsPage() {
                 )}
               </div>
               
-              <div className="shrink-0 flex bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/5 rounded-xl p-1 shadow-sm dark:shadow-inner h-[46px] items-center">
+              <div className="shrink-0 flex bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/5 rounded-xl p-1 shadow-sm dark:shadow-inner h-[46px] items-center mb-1">
                 <button 
                   onClick={() => setViewMode('grid')} 
                   className={`p-2 rounded-lg transition-all outline-none ${viewMode === 'grid' ? 'bg-indigo-500 dark:bg-indigo-600 text-white shadow-md dark:shadow-[0_0_10px_rgba(79,70,229,0.5)]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
@@ -1344,8 +1345,9 @@ export default function RequestsPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-1.5 md:p-3 pb-40 md:pb-36">
-          <div className={`max-w-[120rem] mx-auto pt-4 md:pt-6 ${isZenMode ? 'mt-4' : ''}`}>
+        {/* 🟢 حاوية المواد صارت تمتد على راحتها بدل السكرول الداخلي 🟢 */}
+        <div className="flex-1 w-full p-2 md:p-4 pb-32 md:pb-40">
+          <div className={`max-w-[120rem] mx-auto ${isZenMode ? 'mt-4' : ''}`}>
             
             {isDraftRestored && (
               <div className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 mb-3 animate-in fade-in slide-in-from-top-4 border border-emerald-200 dark:border-emerald-500/20 shadow-sm dark:shadow-inner">
@@ -1634,6 +1636,8 @@ export default function RequestsPage() {
           .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
           .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
           .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+          .hide-scrollbar::-webkit-scrollbar { display: none; }
+          .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           input[type=number]::-webkit-inner-spin-button, 
           input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
           

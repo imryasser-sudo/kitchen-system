@@ -884,6 +884,9 @@ export default function BranchPortalPage() {
                     </label>
                     <textarea value={orderNotes} onChange={e => setOrderNotes(e.target.value)} placeholder="مثال: يرجى استعجال الدجاج..." rows={3} className="w-full bg-slate-50 dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 font-bold px-4 py-3.5 rounded-xl focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 text-[13px] resize-none transition-all shadow-inner text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600"></textarea>
                   </div>
+
+                  {/* 🟢 مساحة فارغة لضمان رفع السكرول فوق زر الإرسال والشريط السفلي 🟢 */}
+                  <div className="h-[250px] min-h-[250px] w-full shrink-0 block"></div>
                 </div>
               )}
             </div>

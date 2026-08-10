@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom'; // 👈 هذا الاستيراد اللي كان ناقص ومسوي الخطأ
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/components/ThemeProvider'; 
 import { 
@@ -267,7 +268,7 @@ export default function StaffDirectoryPage() {
     }
 
     if (formData.id && ['1', '2', '3'].includes(formData.id)) {
-      alert('لا يمكن تعديل البيانات التجريبية (Mock Data). يرجى الذهاب لتبويب "إضافة موظف" وإضافة موظف حقيقي جديد.');
+      alert('لا يمكن تعديل البيانات التجريبية (Mock Data). يرجى الذهاب لتبويب "إضافة موظف" و إضافة موظف حقيقي جديد.');
       return;
     }
 
@@ -764,7 +765,7 @@ export default function StaffDirectoryPage() {
                 <input 
                   type="text" 
                   placeholder="ابحث بالاسم، رقم الهاتف، أو السكن..." 
-                  value={searchQuery} 
+                  value={searchQuery || ''} 
                   onChange={(e) => setSearchQuery(e.target.value)} 
                   className="w-full bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold px-4 pr-12 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 text-[14px] transition-all shadow-sm dark:shadow-inner"
                 />
@@ -773,12 +774,12 @@ export default function StaffDirectoryPage() {
               <div className="w-px h-10 bg-slate-200 dark:bg-white/10 hidden md:block mx-2 transition-colors"></div>
 
               <div className="flex w-full gap-3 overflow-x-auto custom-island-scroll pb-2 md:pb-0">
-                <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 transition-all min-w-[150px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
+                <select value={departmentFilter || ''} onChange={(e) => setDepartmentFilter(e.target.value)} className="bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 transition-all min-w-[150px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
                   <option value="" className="bg-white dark:bg-[#121214]">كل الأقسام</option>
                   {DEPARTMENTS.map(dept => <option key={dept} value={dept} className="bg-white dark:bg-[#121214]">{dept}</option>)}
                 </select>
                 
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 transition-all min-w-[150px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
+                <select value={statusFilter || ''} onChange={(e) => setStatusFilter(e.target.value)} className="bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 transition-all min-w-[150px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
                   <option value="" className="bg-white dark:bg-[#121214]">حالة الدوام (الكل)</option>
                   <option value="نشط" className="bg-white dark:bg-[#121214]">نشط (على رأس العمل)</option>
                   <option value="مجاز" className="bg-white dark:bg-[#121214]">مجاز</option>
@@ -867,16 +868,16 @@ export default function StaffDirectoryPage() {
                   <input 
                     type="text" 
                     placeholder="ابحث بالاسم، رقم الهاتف..." 
-                    value={searchQuery} 
+                    value={searchQuery || ''} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
                     className="w-full bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold px-4 pr-12 py-3 rounded-xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 text-[13px] transition-all shadow-sm dark:shadow-inner placeholder-slate-400 dark:placeholder-slate-600"
                   />
                 </div>
-                <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="w-full md:w-auto bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3 rounded-xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 transition-all text-[13px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
+                <select value={departmentFilter || ''} onChange={(e) => setDepartmentFilter(e.target.value)} className="w-full md:w-auto bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3 rounded-xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 transition-all text-[13px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
                   <option value="" className="bg-white dark:bg-[#121214]">كل الأقسام</option>
                   {DEPARTMENTS.map(dept => <option key={dept} value={dept} className="bg-white dark:bg-[#121214]">{dept}</option>)}
                 </select>
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full md:w-auto bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3 rounded-xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 transition-all text-[13px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
+                <select value={statusFilter || ''} onChange={(e) => setStatusFilter(e.target.value)} className="w-full md:w-auto bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3 rounded-xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 transition-all text-[13px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
                   <option value="" className="bg-white dark:bg-[#121214]">حالة الدوام (الكل)</option>
                   <option value="نشط" className="bg-white dark:bg-[#121214]">نشط</option>
                   <option value="مجاز" className="bg-white dark:bg-[#121214]">مجاز</option>
@@ -905,7 +906,7 @@ export default function StaffDirectoryPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                   <div className="flex flex-col gap-2">
                     <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase">حجم الورق</label>
-                    <select value={pdfSettings.paperSize} onChange={e => updatePdfSetting('paperSize', e.target.value)} className="bg-slate-50 dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-sm px-4 py-2.5 rounded-xl outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 cursor-pointer appearance-none transition-colors shadow-sm dark:shadow-inner">
+                    <select value={pdfSettings.paperSize || ''} onChange={e => updatePdfSetting('paperSize', e.target.value)} className="bg-slate-50 dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-sm px-4 py-2.5 rounded-xl outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 cursor-pointer appearance-none transition-colors shadow-sm dark:shadow-inner">
                       <option value="A4" className="bg-white dark:bg-[#121214]">A4 (ورق قياسي)</option>
                       <option value="A3" className="bg-white dark:bg-[#121214]">A3 (أفضل للأعمدة الكثيرة)</option>
                     </select>
@@ -913,7 +914,7 @@ export default function StaffDirectoryPage() {
                   
                   <div className="flex flex-col gap-2">
                     <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase">هوامش الورقة</label>
-                    <select value={pdfSettings.margin} onChange={e => updatePdfSetting('margin', e.target.value)} className="bg-slate-50 dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-sm px-4 py-2.5 rounded-xl outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 cursor-pointer appearance-none transition-colors shadow-sm dark:shadow-inner">
+                    <select value={pdfSettings.margin || ''} onChange={e => updatePdfSetting('margin', e.target.value)} className="bg-slate-50 dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-sm px-4 py-2.5 rounded-xl outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 cursor-pointer appearance-none transition-colors shadow-sm dark:shadow-inner">
                       <option value="0mm" className="bg-white dark:bg-[#121214]">بدون هوامش (0mm)</option>
                       <option value="2mm" className="bg-white dark:bg-[#121214]">ضيقة جداً (2mm)</option>
                       <option value="5mm" className="bg-white dark:bg-[#121214]">ضيقة (5mm)</option>
@@ -930,9 +931,9 @@ export default function StaffDirectoryPage() {
                   <div className="flex flex-col gap-2 w-full lg:col-span-2">
                     <div className="flex justify-between items-center">
                       <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1"><MoveHorizontal className="w-3 h-3"/> إزاحة أفقية (يمين/يسار)</label>
-                      <span className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px] font-black px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-500/30 shadow-sm dark:shadow-inner" dir="ltr">{pdfSettings.shiftX} mm</span>
+                      <span className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px] font-black px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-500/30 shadow-sm dark:shadow-inner" dir="ltr">{pdfSettings.shiftX || 0} mm</span>
                     </div>
-                    <input type="range" min="-50" max="50" value={pdfSettings.shiftX} onChange={e => updatePdfSetting('shiftX', Number(e.target.value))} className="w-full accent-emerald-600 dark:accent-emerald-500 h-2 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer mt-1 border border-transparent dark:border-white/5" />
+                    <input type="range" min="-50" max="50" value={pdfSettings.shiftX || 0} onChange={e => updatePdfSetting('shiftX', Number(e.target.value))} className="w-full accent-emerald-600 dark:accent-emerald-500 h-2 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer mt-1 border border-transparent dark:border-white/5" />
                   </div>
                 </div>
 
@@ -946,25 +947,25 @@ export default function StaffDirectoryPage() {
                   <div className="flex flex-col gap-2 w-full col-span-2 md:col-span-3 lg:col-span-6 mb-2">
                     <div className="flex justify-between items-center">
                       <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">مقياس الجدول (Zoom)</label>
-                      <span className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px] font-black px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-500/30 shadow-sm dark:shadow-inner">{pdfSettings.zoom}%</span>
+                      <span className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px] font-black px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-500/30 shadow-sm dark:shadow-inner">{pdfSettings.zoom || 90}%</span>
                     </div>
-                    <input type="range" min="30" max="150" value={pdfSettings.zoom} onChange={e => updatePdfSetting('zoom', Number(e.target.value))} className="w-full accent-emerald-600 dark:accent-emerald-500 h-2 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" />
+                    <input type="range" min="30" max="150" value={pdfSettings.zoom || 90} onChange={e => updatePdfSetting('zoom', Number(e.target.value))} className="w-full accent-emerald-600 dark:accent-emerald-500 h-2 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" />
                   </div>
 
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">التسلسل</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_seq}%</span></div><input type="range" min="2" max="10" value={pdfSettings.c_seq} onChange={e => updatePdfSetting('c_seq', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">اسم الموظف</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_name}%</span></div><input type="range" min="10" max="40" value={pdfSettings.c_name} onChange={e => updatePdfSetting('c_name', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الهاتف</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_phone}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_phone} onChange={e => updatePdfSetting('c_phone', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">المواليد</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_birth}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_birth} onChange={e => updatePdfSetting('c_birth', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">القسم</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_dept}%</span></div><input type="range" min="5" max="25" value={pdfSettings.c_dept} onChange={e => updatePdfSetting('c_dept', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">المنصب</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_role}%</span></div><input type="range" min="5" max="25" value={pdfSettings.c_role} onChange={e => updatePdfSetting('c_role', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الفرع</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_branch}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_branch} onChange={e => updatePdfSetting('c_branch', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">تاريخ المباشرة</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_join}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_join} onChange={e => updatePdfSetting('c_join', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الراتب ($)</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_salary}%</span></div><input type="range" min="3" max="15" value={pdfSettings.c_salary} onChange={e => updatePdfSetting('c_salary', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الحالة</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_status}%</span></div><input type="range" min="3" max="15" value={pdfSettings.c_status} onChange={e => updatePdfSetting('c_status', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">التسلسل</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_seq || 4}%</span></div><input type="range" min="2" max="10" value={pdfSettings.c_seq || 4} onChange={e => updatePdfSetting('c_seq', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">اسم الموظف</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_name || 18}%</span></div><input type="range" min="10" max="40" value={pdfSettings.c_name || 18} onChange={e => updatePdfSetting('c_name', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الهاتف</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_phone || 12}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_phone || 12} onChange={e => updatePdfSetting('c_phone', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">المواليد</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_birth || 10}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_birth || 10} onChange={e => updatePdfSetting('c_birth', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">القسم</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_dept || 12}%</span></div><input type="range" min="5" max="25" value={pdfSettings.c_dept || 12} onChange={e => updatePdfSetting('c_dept', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">المنصب</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_role || 12}%</span></div><input type="range" min="5" max="25" value={pdfSettings.c_role || 12} onChange={e => updatePdfSetting('c_role', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الفرع</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_branch || 10}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_branch || 10} onChange={e => updatePdfSetting('c_branch', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">تاريخ المباشرة</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_join || 10}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_join || 10} onChange={e => updatePdfSetting('c_join', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الراتب ($)</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_salary || 6}%</span></div><input type="range" min="3" max="15" value={pdfSettings.c_salary || 6} onChange={e => updatePdfSetting('c_salary', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الحالة</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_status || 6}%</span></div><input type="range" min="3" max="15" value={pdfSettings.c_status || 6} onChange={e => updatePdfSetting('c_status', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
                 </div>
 
                 {!pdfSettings.autoFit && (() => {
-                  const totalCalculatedWidth = pdfSettings.c_seq + pdfSettings.c_name + pdfSettings.c_phone + pdfSettings.c_birth + pdfSettings.c_dept + pdfSettings.c_role + pdfSettings.c_branch + pdfSettings.c_join + pdfSettings.c_salary + pdfSettings.c_status;
+                  const totalCalculatedWidth = (pdfSettings.c_seq || 0) + (pdfSettings.c_name || 0) + (pdfSettings.c_phone || 0) + (pdfSettings.c_birth || 0) + (pdfSettings.c_dept || 0) + (pdfSettings.c_role || 0) + (pdfSettings.c_branch || 0) + (pdfSettings.c_join || 0) + (pdfSettings.c_salary || 0) + (pdfSettings.c_status || 0);
                   return (
                     <div className={`p-3 rounded-xl border flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] font-black mt-2 transition-colors shadow-sm dark:shadow-inner ${totalCalculatedWidth > 100 ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400' : 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400'}`}>
                       <span>مجموع النسب للأعمدة: <span className={`text-sm px-1 ${totalCalculatedWidth > 100 ? 'text-rose-700 dark:text-rose-500' : 'text-emerald-800 dark:text-emerald-500'}`}>{totalCalculatedWidth}%</span></span>
@@ -1014,16 +1015,17 @@ export default function StaffDirectoryPage() {
                           </div>
                           {emp.full_name}
                         </td>
-                        <td className="py-3 px-4 font-bold text-slate-500 dark:text-slate-400 text-center dir-ltr">{emp.phone}</td>
+                        <td className="py-3 px-4 font-bold text-slate-500 dark:text-slate-400 text-center dir-ltr">{emp.phone || ''}</td>
                         <td className="py-3 px-4 font-bold text-slate-500 dark:text-slate-400 text-center dir-ltr">{emp.birth_date || '-'}</td>
                         <td className="py-3 px-4 font-black text-indigo-600 dark:text-indigo-400 text-center">{emp.department || '-'}</td>
-                        <td className="py-3 px-4 font-bold text-slate-700 dark:text-slate-300 text-center">{emp.role}</td>
-                        <td className="py-3 px-4 font-black text-emerald-600 dark:text-emerald-400 text-center">{emp.branch}</td>
+                        <td className="py-3 px-4 font-bold text-slate-700 dark:text-slate-300 text-center">{emp.role || ''}</td>
+                        <td className="py-3 px-4 font-black text-emerald-600 dark:text-emerald-400 text-center">{emp.branch || ''}</td>
                         <td className="py-3 px-4 font-bold text-slate-500 dark:text-slate-400 text-center dir-ltr">{emp.join_date || '-'}</td>
-                        <td className="py-3 px-4 font-black text-rose-600 dark:text-rose-400 text-center dir-ltr">${emp.salary}</td>
+                        <td className="py-3 px-4 font-black text-rose-600 dark:text-rose-400 text-center dir-ltr">${emp.salary || 0}</td>
                         <td className="py-3 px-4 text-center">
                           <span className={`px-2 py-1 rounded-md text-[10px] font-black border shadow-sm dark:shadow-inner inline-block ${
-                            emp.status === 'نشط' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
+                            emp.status === 'نشط' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 
+                            'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
                           }`}>
                             {emp.status}
                           </span>
@@ -1054,12 +1056,12 @@ export default function StaffDirectoryPage() {
                   <input 
                     type="text" 
                     placeholder="ابحث بالاسم، رقم الهاتف..." 
-                    value={searchQuery} 
+                    value={searchQuery || ''} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
                     className="w-full bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold px-4 pr-12 py-3 rounded-xl focus:outline-none focus:border-rose-400 dark:focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/10 text-[13px] transition-all shadow-sm dark:shadow-inner placeholder-slate-400 dark:placeholder-slate-600"
                   />
                 </div>
-                <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="w-full md:w-auto bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3 rounded-xl focus:outline-none focus:border-rose-400 dark:focus:border-rose-500/50 transition-all text-[13px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
+                <select value={departmentFilter || ''} onChange={(e) => setDepartmentFilter(e.target.value)} className="w-full md:w-auto bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold px-4 py-3 rounded-xl focus:outline-none focus:border-rose-400 dark:focus:border-rose-500/50 transition-all text-[13px] cursor-pointer appearance-none shadow-sm dark:shadow-inner">
                   <option value="" className="bg-white dark:bg-[#121214]">كل الأقسام</option>
                   {DEPARTMENTS.map(dept => <option key={dept} value={dept} className="bg-white dark:bg-[#121214]">{dept}</option>)}
                 </select>
@@ -1096,7 +1098,7 @@ export default function StaffDirectoryPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                   <div className="flex flex-col gap-2">
                     <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase">حجم الورق</label>
-                    <select value={pdfSettings.paperSize} onChange={e => updatePdfSetting('paperSize', e.target.value)} className="bg-slate-50 dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-sm px-4 py-2.5 rounded-xl outline-none focus:border-rose-400 dark:focus:border-rose-500/50 cursor-pointer appearance-none transition-colors shadow-sm dark:shadow-inner">
+                    <select value={pdfSettings.paperSize || ''} onChange={e => updatePdfSetting('paperSize', e.target.value)} className="bg-slate-50 dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-sm px-4 py-2.5 rounded-xl outline-none focus:border-rose-400 dark:focus:border-rose-500/50 cursor-pointer appearance-none transition-colors shadow-sm dark:shadow-inner">
                       <option value="A4" className="bg-white dark:bg-[#121214]">A4 (ورق قياسي)</option>
                       <option value="A3" className="bg-white dark:bg-[#121214]">A3 (أفضل للأعمدة الكثيرة)</option>
                     </select>
@@ -1104,7 +1106,7 @@ export default function StaffDirectoryPage() {
                   
                   <div className="flex flex-col gap-2">
                     <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase">هوامش الورقة</label>
-                    <select value={pdfSettings.margin} onChange={e => updatePdfSetting('margin', e.target.value)} className="bg-slate-50 dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-sm px-4 py-2.5 rounded-xl outline-none focus:border-rose-400 dark:focus:border-rose-500/50 cursor-pointer appearance-none transition-colors shadow-sm dark:shadow-inner">
+                    <select value={pdfSettings.margin || ''} onChange={e => updatePdfSetting('margin', e.target.value)} className="bg-slate-50 dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-sm px-4 py-2.5 rounded-xl outline-none focus:border-rose-400 dark:focus:border-rose-500/50 cursor-pointer appearance-none transition-colors shadow-sm dark:shadow-inner">
                       <option value="0mm" className="bg-white dark:bg-[#121214]">بدون هوامش (0mm)</option>
                       <option value="2mm" className="bg-white dark:bg-[#121214]">ضيقة جداً (2mm)</option>
                       <option value="5mm" className="bg-white dark:bg-[#121214]">ضيقة (5mm)</option>
@@ -1113,7 +1115,7 @@ export default function StaffDirectoryPage() {
                   </div>
 
                   <div className="flex flex-col justify-end gap-2">
-                    <button onClick={() => updatePdfSetting('autoFit', !pdfSettings.autoFit)} className={`flex items-center justify-center gap-2 h-[42px] px-4 rounded-xl border text-sm font-black transition-all outline-none cursor-pointer active:scale-95 focus:ring-2 focus:ring-rose-500/50 ${pdfSettings.autoFit ? 'bg-rose-600 dark:bg-rose-500 border-rose-700 dark:border-rose-400 text-white shadow-md dark:shadow-[0_0_15px_rgba(225,29,72,0.4)]' : 'bg-slate-50 dark:bg-[#0a0a0c] border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'}`}>
+                    <button onClick={() => updatePdfSetting('autoFit', !pdfSettings.autoFit)} className={`flex items-center justify-center gap-2 h-[42px] px-4 rounded-xl border text-sm font-black transition-all outline-none cursor-pointer active:scale-95 focus:ring-2 focus:ring-rose-500/50 ${pdfSettings.autoFit ? 'bg-rose-600 dark:bg-rose-500 border-rose-700 dark:border-rose-400 text-white shadow-md dark:shadow-[0_0_15px_rgba(225,29,72,0.4)]' : 'bg-white dark:bg-[#121214] border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'}`}>
                       <Maximize className="w-4 h-4" /> {pdfSettings.autoFit ? 'الاحتواء: تلقائي' : 'الاحتواء: يدوي'}
                     </button>
                   </div>
@@ -1121,9 +1123,9 @@ export default function StaffDirectoryPage() {
                   <div className="flex flex-col gap-2 w-full lg:col-span-2">
                     <div className="flex justify-between items-center">
                       <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1"><MoveHorizontal className="w-3 h-3"/> إزاحة أفقية (يمين/يسار)</label>
-                      <span className="bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-[11px] font-black px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-500/30 shadow-sm dark:shadow-inner" dir="ltr">{pdfSettings.shiftX} mm</span>
+                      <span className="bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-[11px] font-black px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-500/30 shadow-sm dark:shadow-inner" dir="ltr">{pdfSettings.shiftX || 0} mm</span>
                     </div>
-                    <input type="range" min="-50" max="50" value={pdfSettings.shiftX} onChange={e => updatePdfSetting('shiftX', Number(e.target.value))} className="w-full accent-rose-600 dark:accent-rose-500 h-2 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer mt-1 border border-transparent dark:border-white/5" />
+                    <input type="range" min="-50" max="50" value={pdfSettings.shiftX || 0} onChange={e => updatePdfSetting('shiftX', Number(e.target.value))} className="w-full accent-rose-600 dark:accent-rose-500 h-2 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer mt-1 border border-transparent dark:border-white/5" />
                   </div>
                 </div>
 
@@ -1137,25 +1139,25 @@ export default function StaffDirectoryPage() {
                   <div className="flex flex-col gap-2 w-full col-span-2 md:col-span-3 lg:col-span-6 mb-2">
                     <div className="flex justify-between items-center">
                       <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">مقياس الجدول (Zoom)</label>
-                      <span className="bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-[11px] font-black px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-500/30 shadow-sm dark:shadow-inner">{pdfSettings.zoom}%</span>
+                      <span className="bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-[11px] font-black px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-500/30 shadow-sm dark:shadow-inner">{pdfSettings.zoom || 90}%</span>
                     </div>
-                    <input type="range" min="30" max="150" value={pdfSettings.zoom} onChange={e => updatePdfSetting('zoom', Number(e.target.value))} className="w-full accent-rose-600 dark:accent-rose-500 h-2 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" />
+                    <input type="range" min="30" max="150" value={pdfSettings.zoom || 90} onChange={e => updatePdfSetting('zoom', Number(e.target.value))} className="w-full accent-rose-600 dark:accent-rose-500 h-2 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" />
                   </div>
 
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">التسلسل</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_seq}%</span></div><input type="range" min="2" max="10" value={pdfSettings.c_seq} onChange={e => updatePdfSetting('c_seq', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">اسم الموظف</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_name}%</span></div><input type="range" min="10" max="40" value={pdfSettings.c_name} onChange={e => updatePdfSetting('c_name', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الهاتف</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_phone}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_phone} onChange={e => updatePdfSetting('c_phone', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">المواليد</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_birth}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_birth} onChange={e => updatePdfSetting('c_birth', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">القسم</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_dept}%</span></div><input type="range" min="5" max="25" value={pdfSettings.c_dept} onChange={e => updatePdfSetting('c_dept', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">المنصب</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_role}%</span></div><input type="range" min="5" max="25" value={pdfSettings.c_role} onChange={e => updatePdfSetting('c_role', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الفرع</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_branch}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_branch} onChange={e => updatePdfSetting('c_branch', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">تاريخ المباشرة</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_join}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_join} onChange={e => updatePdfSetting('c_join', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الراتب ($)</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_salary}%</span></div><input type="range" min="3" max="15" value={pdfSettings.c_salary} onChange={e => updatePdfSetting('c_salary', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
-                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الحالة</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_status}%</span></div><input type="range" min="3" max="15" value={pdfSettings.c_status} onChange={e => updatePdfSetting('c_status', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">التسلسل</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_seq || 4}%</span></div><input type="range" min="2" max="10" value={pdfSettings.c_seq || 4} onChange={e => updatePdfSetting('c_seq', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">اسم الموظف</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_name || 18}%</span></div><input type="range" min="10" max="40" value={pdfSettings.c_name || 18} onChange={e => updatePdfSetting('c_name', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الهاتف</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_phone || 12}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_phone || 12} onChange={e => updatePdfSetting('c_phone', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">المواليد</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_birth || 10}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_birth || 10} onChange={e => updatePdfSetting('c_birth', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">القسم</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_dept || 12}%</span></div><input type="range" min="5" max="25" value={pdfSettings.c_dept || 12} onChange={e => updatePdfSetting('c_dept', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">المنصب</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_role || 12}%</span></div><input type="range" min="5" max="25" value={pdfSettings.c_role || 12} onChange={e => updatePdfSetting('c_role', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الفرع</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_branch || 10}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_branch || 10} onChange={e => updatePdfSetting('c_branch', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">تاريخ المباشرة</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_join || 10}%</span></div><input type="range" min="5" max="20" value={pdfSettings.c_join || 10} onChange={e => updatePdfSetting('c_join', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الراتب ($)</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_salary || 6}%</span></div><input type="range" min="3" max="15" value={pdfSettings.c_salary || 6} onChange={e => updatePdfSetting('c_salary', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
+                  <div className="flex flex-col gap-2 w-full"><div className="flex justify-between items-center"><label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">الحالة</label><span className="text-slate-600 dark:text-slate-500 text-[9px] font-black">{pdfSettings.c_status || 6}%</span></div><input type="range" min="3" max="15" value={pdfSettings.c_status || 6} onChange={e => updatePdfSetting('c_status', Number(e.target.value))} className="w-full accent-slate-500 dark:accent-slate-400 h-1.5 bg-slate-200 dark:bg-[#050505] rounded-lg appearance-none cursor-pointer border border-transparent dark:border-white/5" /></div>
                 </div>
 
                 {!pdfSettings.autoFit && (() => {
-                  const totalCalculatedWidth = pdfSettings.c_seq + pdfSettings.c_name + pdfSettings.c_phone + pdfSettings.c_birth + pdfSettings.c_dept + pdfSettings.c_role + pdfSettings.c_branch + pdfSettings.c_join + pdfSettings.c_salary + pdfSettings.c_status;
+                  const totalCalculatedWidth = (pdfSettings.c_seq || 0) + (pdfSettings.c_name || 0) + (pdfSettings.c_phone || 0) + (pdfSettings.c_birth || 0) + (pdfSettings.c_dept || 0) + (pdfSettings.c_role || 0) + (pdfSettings.c_branch || 0) + (pdfSettings.c_join || 0) + (pdfSettings.c_salary || 0) + (pdfSettings.c_status || 0);
                   return (
                     <div className={`p-3 rounded-xl border flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] font-black mt-2 transition-colors shadow-sm dark:shadow-inner ${totalCalculatedWidth > 100 ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400' : 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400'}`}>
                       <span>مجموع النسب للأعمدة: <span className={`text-sm px-1 ${totalCalculatedWidth > 100 ? 'text-rose-700 dark:text-rose-500' : 'text-emerald-800 dark:text-emerald-500'}`}>{totalCalculatedWidth}%</span></span>
@@ -1205,13 +1207,13 @@ export default function StaffDirectoryPage() {
                           </div>
                           {emp.full_name}
                         </td>
-                        <td className="py-3 px-4 font-bold text-slate-500 dark:text-slate-400 text-center dir-ltr">{emp.phone}</td>
+                        <td className="py-3 px-4 font-bold text-slate-500 dark:text-slate-400 text-center dir-ltr">{emp.phone || ''}</td>
                         <td className="py-3 px-4 font-bold text-slate-500 dark:text-slate-400 text-center dir-ltr">{emp.birth_date || '-'}</td>
                         <td className="py-3 px-4 font-black text-indigo-600/70 dark:text-indigo-400/70 text-center">{emp.department || '-'}</td>
-                        <td className="py-3 px-4 font-bold text-slate-700/70 dark:text-slate-300/70 text-center">{emp.role}</td>
-                        <td className="py-3 px-4 font-black text-emerald-600/70 dark:text-emerald-400/70 text-center">{emp.branch}</td>
+                        <td className="py-3 px-4 font-bold text-slate-700/70 dark:text-slate-300/70 text-center">{emp.role || ''}</td>
+                        <td className="py-3 px-4 font-black text-emerald-600/70 dark:text-emerald-400/70 text-center">{emp.branch || ''}</td>
                         <td className="py-3 px-4 font-bold text-slate-500 dark:text-slate-400 text-center dir-ltr">{emp.join_date || '-'}</td>
-                        <td className="py-3 px-4 font-black text-rose-600/70 dark:text-rose-400/70 text-center dir-ltr">${emp.salary}</td>
+                        <td className="py-3 px-4 font-black text-rose-600/70 dark:text-rose-400/70 text-center dir-ltr">${emp.salary ?? ''}</td>
                         <td className="py-3 px-4 text-center">
                           <span className="px-2 py-1 rounded-md text-[10px] font-black border bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-500/20 shadow-sm dark:shadow-inner inline-block">
                             {emp.status}
@@ -1269,7 +1271,7 @@ export default function StaffDirectoryPage() {
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 transition-colors duration-300"><Users className="w-5 h-5"/></div>
                       <input 
                         type="text" 
-                        value={formData.full_name}
+                        value={formData.full_name || ''}
                         onChange={(e) => setFormData({...formData, full_name: e.target.value})}
                         placeholder="مثال: علي محمد حسين" 
                         className="w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-bold px-4 pr-12 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm dark:shadow-inner" 
@@ -1283,7 +1285,7 @@ export default function StaffDirectoryPage() {
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 transition-colors duration-300"><Phone className="w-5 h-5"/></div>
                       <input 
                         type="text" 
-                        value={formData.phone}
+                        value={formData.phone || ''}
                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
                         placeholder="07XX XXX XXXX" 
                         className="w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-bold px-4 pr-12 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm dark:shadow-inner dir-ltr text-right" 
@@ -1360,7 +1362,7 @@ export default function StaffDirectoryPage() {
                         <label className="block text-[12px] font-black text-slate-500 dark:text-slate-400 mb-2 transition-colors duration-300">المحافظة</label>
                         <div className="relative">
                           <select 
-                            value={formData.iraqi_gov} 
+                            value={formData.iraqi_gov || ''} 
                             onChange={(e) => setFormData({...formData, iraqi_gov: e.target.value, iraqi_area: ''})} 
                             className="w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm dark:shadow-inner cursor-pointer appearance-none"
                           >
@@ -1373,7 +1375,7 @@ export default function StaffDirectoryPage() {
                         <label className="block text-[12px] font-black text-slate-500 dark:text-slate-400 mb-2 transition-colors duration-300">المنطقة / القضاء</label>
                         <div className="relative">
                           <select 
-                            value={formData.iraqi_area} 
+                            value={formData.iraqi_area || ''} 
                             onChange={(e) => setFormData({...formData, iraqi_area: e.target.value})} 
                             className="w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm dark:shadow-inner cursor-pointer appearance-none"
                           >
@@ -1391,7 +1393,7 @@ export default function StaffDirectoryPage() {
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 transition-colors duration-300"><Globe className="w-5 h-5"/></div>
                         <input 
                           type="text" 
-                          value={formData.expat_country}
+                          value={formData.expat_country || ''}
                           onChange={(e) => setFormData({...formData, expat_country: e.target.value})}
                           placeholder="مثال: مصر، سوريا، بنغلادش..." 
                           className="w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-bold px-4 pr-12 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm dark:shadow-inner" 
@@ -1405,7 +1407,7 @@ export default function StaffDirectoryPage() {
                     <div className="relative">
                       <div className="absolute right-4 top-[18px] text-slate-400 dark:text-slate-500 transition-colors duration-300"><Home className="w-5 h-5"/></div>
                       <textarea 
-                        value={formData.address_details}
+                        value={formData.address_details || ''}
                         onChange={(e) => setFormData({...formData, address_details: e.target.value})}
                         placeholder="مثال: محلة XX زقاق XX دار XX..." 
                         rows={2}
@@ -1442,7 +1444,7 @@ export default function StaffDirectoryPage() {
                     <label className="block text-[12px] font-black text-slate-500 dark:text-slate-400 mb-2 transition-colors duration-300">القسم التنظيمي</label>
                     <div className="relative">
                       <select 
-                        value={formData.department}
+                        value={formData.department || ''}
                         onChange={(e) => setFormData({...formData, department: e.target.value})}
                         className="w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm dark:shadow-inner cursor-pointer appearance-none"
                       >
@@ -1457,7 +1459,7 @@ export default function StaffDirectoryPage() {
                     <label className="block text-[12px] font-black text-slate-500 dark:text-slate-400 mb-2 transition-colors duration-300">المنصب / الوظيفة</label>
                     <div className="relative">
                       <select 
-                        value={formData.role}
+                        value={formData.role || ''}
                         onChange={(e) => setFormData({...formData, role: e.target.value})}
                         className="w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm dark:shadow-inner cursor-pointer appearance-none"
                       >
@@ -1472,7 +1474,7 @@ export default function StaffDirectoryPage() {
                     <label className="block text-[12px] font-black text-slate-500 dark:text-slate-400 mb-2 transition-colors duration-300">مكان العمل (الفرع/الوكالة)</label>
                     <div className="relative">
                       <select 
-                        value={formData.branch}
+                        value={formData.branch || ''}
                         onChange={(e) => setFormData({...formData, branch: e.target.value})}
                         className="w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm dark:shadow-inner cursor-pointer appearance-none"
                       >
@@ -1505,7 +1507,7 @@ export default function StaffDirectoryPage() {
                     <label className="block text-[12px] font-black text-slate-500 dark:text-slate-400 mb-2 transition-colors duration-300">حالة الدوام</label>
                     <div className="relative">
                       <select 
-                        value={formData.status}
+                        value={formData.status || 'نشط'}
                         onChange={(e) => setFormData({...formData, status: e.target.value as any})}
                         className={`w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 font-bold px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-4 transition-all shadow-sm dark:shadow-inner cursor-pointer appearance-none ${
                           formData.status === 'نشط' ? 'text-emerald-600 dark:text-emerald-400 focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-emerald-500/10' : 
@@ -1533,7 +1535,7 @@ export default function StaffDirectoryPage() {
                     <label className="block text-[12px] font-black text-slate-500 dark:text-slate-400 mb-2 transition-colors duration-300">الراتب الأساسي ($)</label>
                     <input 
                       type="number" 
-                      value={formData.salary || ''}
+                      value={formData.salary ?? ''}
                       onChange={(e) => setFormData({...formData, salary: Number(e.target.value)})}
                       placeholder="مثال: 500" 
                       className="w-full bg-slate-50/50 dark:bg-[#050505] border border-slate-200 dark:border-white/10 text-emerald-600 dark:text-emerald-400 placeholder-slate-400 dark:placeholder-slate-600 font-black px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm dark:shadow-inner dir-ltr text-center" 
@@ -1548,10 +1550,10 @@ export default function StaffDirectoryPage() {
         {/* ========================================================= */}
         {/* 🌟 النافذة المنبثقة: الملف الشخصي للموظف 🌟 */}
         {/* ========================================================= */}
-        {selectedEmployee && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-10 bg-slate-900/40 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-300 no-print">
+        {isMounted && selectedEmployee && createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-10 bg-slate-900/40 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-300 no-print" dir="rtl">
             
-            <div className="bg-white dark:bg-[#0a0a0c] w-full max-w-[600px] rounded-[2.5rem] shadow-2xl dark:shadow-[0_0_80px_rgba(79,70,229,0.15)] relative border border-slate-200 dark:border-white/10 flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-300 transition-colors">
+            <div className="bg-white dark:bg-[#0a0a0c] w-full max-w-[600px] rounded-[2.5rem] shadow-2xl dark:shadow-[0_0_80px_rgba(79,70,229,0.15)] relative border border-slate-200 dark:border-white/10 flex flex-col max-h-[90dvh] overflow-hidden animate-in zoom-in-95 duration-300 transition-colors">
               <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${selectedEmployee.avatar_color || 'from-slate-400 to-slate-500'}`}></div>
               
               <button onClick={() => setSelectedEmployee(null)} className="absolute top-6 left-6 text-slate-400 dark:text-slate-500 hover:text-white bg-slate-100 dark:bg-[#121214] hover:bg-rose-500 dark:hover:bg-rose-500 border border-slate-200 dark:border-white/5 hover:border-rose-500 p-2.5 rounded-full transition-all duration-300 z-20 outline-none cursor-pointer active:scale-95"><X className="w-5 h-5" /></button>
@@ -1586,7 +1588,7 @@ export default function StaffDirectoryPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/5 rounded-2xl p-4 flex items-center gap-4 sm:col-span-2 shadow-sm dark:shadow-inner transition-colors">
                       <div className="p-3 bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/5 shadow-sm rounded-xl text-slate-400 dark:text-slate-500 shrink-0 transition-colors"><Phone className="w-5 h-5"/></div>
-                      <div className="overflow-hidden"><p className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">الهاتف</p><p className="text-[16px] font-black text-slate-800 dark:text-slate-200 dir-ltr text-right truncate">{selectedEmployee.phone}</p></div>
+                      <div className="overflow-hidden"><p className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">الهاتف</p><p className="text-[16px] font-black text-slate-800 dark:text-slate-200 dir-ltr text-right truncate">{selectedEmployee.phone || '-'}</p></div>
                     </div>
 
                     <div className="bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/5 rounded-2xl p-4 flex items-center gap-4 sm:col-span-2 shadow-sm dark:shadow-inner transition-colors">
@@ -1625,11 +1627,11 @@ export default function StaffDirectoryPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/5 rounded-2xl p-4 shadow-sm dark:shadow-inner transition-colors">
                       <div className="flex items-center gap-2 mb-2"><Calendar className="w-4 h-4 text-sky-500 dark:text-sky-400"/><span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">تاريخ المباشرة</span></div>
-                      <p className="text-[15px] font-black text-slate-800 dark:text-slate-300 dir-ltr">{selectedEmployee.join_date}</p>
+                      <p className="text-[15px] font-black text-slate-800 dark:text-slate-300 dir-ltr">{selectedEmployee.join_date || '-'}</p>
                     </div>
                     <div className="bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/5 rounded-2xl p-4 shadow-sm dark:shadow-inner transition-colors">
                       <div className="flex items-center gap-2 mb-2"><Wallet className="w-4 h-4 text-emerald-600 dark:text-emerald-400"/><span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">الراتب الأساسي</span></div>
-                      <p className="text-[15px] font-black text-slate-800 dark:text-slate-300 dir-ltr">${selectedEmployee.salary}</p>
+                      <p className="text-[15px] font-black text-slate-800 dark:text-slate-300 dir-ltr">${selectedEmployee.salary || 0}</p>
                     </div>
                   </div>
                 </div>
@@ -1656,15 +1658,16 @@ export default function StaffDirectoryPage() {
                 )}
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* ========================================================= */}
         {/* ⚠️ حاسبة التخليص ونهاية الخدمة الخرافية ⚠️ */}
         {/* ========================================================= */}
-        {settlementData && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center px-4 py-10 bg-slate-900/60 dark:bg-[#050505]/80 backdrop-blur-md animate-in fade-in duration-300 no-print">
-            <div className="bg-white dark:bg-[#0a0a0c] w-full max-w-[700px] rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.2)] dark:shadow-[0_0_80px_rgba(79,70,229,0.15)] relative border border-slate-200 dark:border-white/10 flex flex-col max-h-[95vh] overflow-hidden animate-in zoom-in-95 duration-300 transition-colors">
+        {isMounted && settlementData && createPortal(
+          <div className="fixed inset-0 z-[200] flex items-center justify-center px-4 py-10 bg-slate-900/60 dark:bg-[#050505]/80 backdrop-blur-md animate-in fade-in duration-300 no-print" dir="rtl">
+            <div className="bg-white dark:bg-[#0a0a0c] w-full max-w-[700px] rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.2)] dark:shadow-[0_0_80px_rgba(79,70,229,0.15)] relative border border-slate-200 dark:border-white/10 flex flex-col max-h-[90dvh] overflow-hidden animate-in zoom-in-95 duration-300 transition-colors">
               
               <div className="p-6 md:p-8 shrink-0 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-[#121214]/50 flex items-center justify-between transition-colors">
                 <div className="flex items-center gap-4">
@@ -1719,7 +1722,7 @@ export default function StaffDirectoryPage() {
                           type="number" 
                           min="0" max="31"
                           placeholder="أدخل عدد الأيام..."
-                          value={settlementData.attendedDays || ''}
+                          value={settlementData.attendedDays ?? ''}
                           onChange={e => setSettlementData({...settlementData, attendedDays: Number(e.target.value)})}
                           className="w-full bg-white dark:bg-[#050505] border border-indigo-200 dark:border-indigo-500/30 text-indigo-900 dark:text-indigo-300 font-black text-lg px-4 py-3.5 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 text-center dir-ltr shadow-sm dark:shadow-inner transition-colors" 
                         />
@@ -1737,7 +1740,7 @@ export default function StaffDirectoryPage() {
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 dark:text-slate-500 pointer-events-none">$</span>
                       <input 
                         type="number" 
-                        value={settlementData.baseEOS === 0 ? '' : settlementData.baseEOS}
+                        value={settlementData.baseEOS ?? ''}
                         onChange={e => setSettlementData({...settlementData, baseEOS: Number(e.target.value)})}
                         className="w-full bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-lg px-4 pl-10 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 dir-ltr text-left shadow-sm dark:shadow-inner transition-all" 
                       />
@@ -1751,7 +1754,7 @@ export default function StaffDirectoryPage() {
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 dark:text-slate-500 pointer-events-none">$</span>
                         <input 
                           type="number" 
-                          value={settlementData.unpaidSalary === 0 ? '' : settlementData.unpaidSalary}
+                          value={settlementData.unpaidSalary ?? ''}
                           onChange={e => setSettlementData({...settlementData, unpaidSalary: Number(e.target.value)})}
                           className="w-full bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-black text-lg px-4 pl-10 py-3.5 rounded-2xl focus:outline-none focus:border-sky-400 dark:focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dir-ltr text-left shadow-sm dark:shadow-inner transition-all" 
                         />
@@ -1764,7 +1767,7 @@ export default function StaffDirectoryPage() {
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 dark:text-slate-500 pointer-events-none">$</span>
                         <input 
                           type="number" 
-                          value={settlementData.deductions === 0 ? '' : settlementData.deductions}
+                          value={settlementData.deductions ?? ''}
                           onChange={e => setSettlementData({...settlementData, deductions: Number(e.target.value)})}
                           className="w-full bg-rose-50/30 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 font-black text-lg px-4 pl-10 py-3.5 rounded-2xl focus:outline-none focus:border-rose-400 dark:focus:border-rose-500/50 focus:ring-4 focus:ring-rose-500/10 dir-ltr text-left shadow-sm dark:shadow-inner transition-all" 
                         />
@@ -1775,7 +1778,7 @@ export default function StaffDirectoryPage() {
                   <div>
                     <label className="text-[12px] font-black text-slate-600 dark:text-slate-400 mb-2 block transition-colors">ملاحظات التصفية <span className="text-[10px] text-slate-400 dark:text-slate-500">(تظهر في الوصل المطبوع)</span></label>
                     <textarea 
-                      value={settlementData.notes}
+                      value={settlementData.notes || ''}
                       onChange={e => setSettlementData({...settlementData, notes: e.target.value})}
                       placeholder="اكتب أي ملاحظات إدارية هنا..."
                       rows={2}
@@ -1808,13 +1811,14 @@ export default function StaffDirectoryPage() {
               </div>
 
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* 💡 التقويم المؤسساتي المنبثق (Modal) 💡 */}
-        {datePickerConfig.isOpen && (
-          <div className="fixed top-0 left-0 w-full h-[100dvh] z-[999999] flex items-center justify-center bg-slate-900/40 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200 overflow-hidden no-print">
-            <div className="bg-white dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-6 md:p-8 w-full max-w-[360px] max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl dark:shadow-[0_0_50px_rgba(16,185,129,0.15)] animate-in zoom-in-95 duration-300">
+        {isMounted && datePickerConfig.isOpen && createPortal(
+          <div className="fixed top-0 left-0 w-full h-[100dvh] z-[999999] flex items-center justify-center bg-slate-900/40 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200 overflow-hidden no-print" dir="rtl">
+            <div className="bg-white dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-6 md:p-8 w-full max-w-[360px] max-h-[90dvh] overflow-y-auto custom-scrollbar shadow-2xl dark:shadow-[0_0_50px_rgba(16,185,129,0.15)] animate-in zoom-in-95 duration-300 flex flex-col">
               
               <div className="flex justify-between items-center mb-6 border-b border-slate-200 dark:border-white/5 pb-5 shrink-0 transition-colors">
                 <button onClick={handlePrevCalendar} className="p-2.5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-emerald-600 dark:text-emerald-400 transition-colors outline-none cursor-pointer active:scale-95">
@@ -1928,7 +1932,8 @@ export default function StaffDirectoryPage() {
                 إلغاء النافذة
               </button>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
       </div>
