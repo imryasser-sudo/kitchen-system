@@ -4,12 +4,23 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 import { 
   LayoutGrid, History, ShoppingCart, BarChart3, 
   UserCheck, LineChart, Sun, Moon, LogOut,
-  ChevronDown, Menu, MonitorPlay, User, TabletSmartphone, Wallet, ClipboardCheck
+  ChevronDown, Menu, MonitorPlay, User, TabletSmartphone, Wallet, ClipboardCheck, BellRing, Bell
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider'; 
+
+// 💡 دالة تشغيل صوت الإشعار 💡
+const playNotificationSound = () => {
+  try {
+    const audio = new Audio('https://actions.google.com/sounds/v1/alarms/friendly_chime.ogg');
+    audio.play().catch((err) => console.log('المتصفح يمنع تشغيل الصوت', err));
+  } catch (error) {
+    console.error("خطأ في تشغيل الصوت", error);
+  }
+};
 
 export default function BottomDock() {
   const pathname = usePathname();
@@ -19,13 +30,19 @@ export default function BottomDock() {
   const [isDockHidden, setIsDockHidden] = useState(false);
   const [role, setRole] = useState<string>('Employee');
   const [currentHash, setCurrentHash] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null); // 💡 حالة المستخدم
   
   const [badges, setBadges] = useState({ cart: 0, approvals: 0, history: 0 });
   const pendingOrdersCount = 0; 
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0); // 💡 عداد الاعتمادات/الإشعارات
 
   useEffect(() => {
     const session = localStorage.getItem('erp_session');
-    if (session) setRole(JSON.parse(session).role || 'Employee');
+    if (session) {
+      const parsedUser = JSON.parse(session);
+      setRole(parsedUser.role || 'Employee');
+      setCurrentUser(parsedUser); // حفظ بيانات المستخدم
+    }
 
     const savedBadges = sessionStorage.getItem('portal_badges');
     if (savedBadges) setBadges(JSON.parse(savedBadges));
@@ -46,6 +63,58 @@ export default function BottomDock() {
       window.removeEventListener('hashchange', onHashChange);
     };
   }, [pathname]);
+
+  // 💡 نظام جلب ومراقبة الاعتمادات الخاص بالفرع (Realtime) 💡
+  const fetchPendingApprovals = async (showNotification = false) => {
+    if (!currentUser || !currentUser.role?.includes('BranchManager')) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`id, status, branch_id, branches(name)`)
+        .in('status', ['بانتظار الاعتماد', 'قيد الانتظار', 'جاهز للاستلام']);
+
+      if (error) throw error;
+
+      const branchPendingOrders = (data || []).filter((o: any) => 
+        o.branches?.name === currentUser.name || 
+        o.branches?.name === currentUser.branch ||
+        o.branch_id === currentUser.id
+      );
+
+      setPendingApprovalsCount(prev => {
+        if (showNotification && branchPendingOrders.length > prev) {
+          playNotificationSound();
+          toast.success('تم استلام إشعار جديد في مركز الإشعارات!', {
+            icon: <BellRing className="w-5 h-5 text-amber-500" />,
+            duration: 5000,
+          });
+        }
+        return branchPendingOrders.length;
+      });
+    } catch (err) {
+      console.error("Error fetching approvals count:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser?.role?.includes('BranchManager')) {
+      fetchPendingApprovals(false);
+
+      const channel = supabase
+        .channel('global_approvals_channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload: any) => {
+          if (payload.new?.branch_id === currentUser.id || payload.new?.status === 'بانتظار الاعتماد') {
+            fetchPendingApprovals(true);
+          } else {
+            fetchPendingApprovals(false);
+          }
+        })
+        .subscribe();
+
+      return () => { supabase.removeChannel(channel); };
+    }
+  }, [currentUser]);
 
   if (pathname?.startsWith('/login')) return null;
 
@@ -97,100 +166,138 @@ export default function BottomDock() {
 
   if (!isAdmin) {
     return (
-      <nav className="fixed bottom-0 left-0 w-full z-[999999] bg-white/95 dark:bg-[#0a0a0c]/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-        <div className="flex justify-between items-center h-[70px] max-w-[600px] mx-auto px-1 sm:px-4">
-          
-          {/* 👨‍🍳 أدوات الموظف العادي 👨‍🍳 */}
-          {isEmployee && (
-            <>
-              <button onClick={() => handleNav('/my-profile', 'id_card')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/my-profile' && currentHash !== 'payroll' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
-                <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/my-profile' && currentHash !== 'payroll' ? 'bg-indigo-100 dark:bg-indigo-500/20 shadow-inner' : 'bg-transparent'}`}>
-                  <User className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                </div>
-                <span className={`text-[10px] font-black transition-all ${pathname === '/my-profile' && currentHash !== 'payroll' ? 'opacity-100' : 'opacity-70'}`}>الرئيسية</span>
-              </button>
+      <>
+        {/* 💡 حركة الاهتزاز الاحترافية للجرس 💡 */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes custom-ring {
+            0% { transform: rotate(0); }
+            10% { transform: rotate(25deg); }
+            20% { transform: rotate(-20deg); }
+            30% { transform: rotate(15deg); }
+            40% { transform: rotate(-10deg); }
+            50% { transform: rotate(0); }
+            100% { transform: rotate(0); }
+          }
+          .animate-custom-ring {
+            animation: custom-ring 2s ease-in-out infinite;
+            transform-origin: top center;
+          }
+        `}} />
 
-              <button onClick={() => handleNav('/my-profile', 'payroll')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/my-profile' && currentHash === 'payroll' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
-                <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/my-profile' && currentHash === 'payroll' ? 'bg-emerald-100 dark:bg-emerald-500/20 shadow-inner' : 'bg-transparent'}`}>
-                  <Wallet className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                </div>
-                <span className={`text-[10px] font-black transition-all ${pathname === '/my-profile' && currentHash === 'payroll' ? 'opacity-100' : 'opacity-70'}`}>الراتب</span>
-              </button>
+        <nav className="fixed bottom-0 left-0 w-full z-[999999] bg-white/95 dark:bg-[#0a0a0c]/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+          <div className="flex justify-between items-center h-[70px] max-w-[600px] mx-auto px-1 sm:px-4">
+            
+            {/* 👨‍🍳 أدوات الموظف العادي 👨‍🍳 */}
+            {isEmployee && (
+              <>
+                <button onClick={() => handleNav('/my-profile', 'id_card')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/my-profile' && currentHash !== 'payroll' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/my-profile' && currentHash !== 'payroll' ? 'bg-indigo-100 dark:bg-indigo-500/20 shadow-inner' : 'bg-transparent'}`}>
+                    <User className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                  </div>
+                  <span className={`text-[10px] font-black transition-all ${pathname === '/my-profile' && currentHash !== 'payroll' ? 'opacity-100' : 'opacity-70'}`}>الرئيسية</span>
+                </button>
 
-              <button onClick={() => handleNav('/kds', '')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/kds' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400'}`}>
-                <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/kds' ? 'bg-rose-100 dark:bg-rose-500/20 shadow-inner' : 'bg-transparent'}`}>
-                  <MonitorPlay className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                </div>
-                <span className={`text-[10px] font-black transition-all ${pathname === '/kds' ? 'opacity-100' : 'opacity-70'}`}>المطبخ</span>
-              </button>
+                <button onClick={() => handleNav('/my-profile', 'payroll')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/my-profile' && currentHash === 'payroll' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/my-profile' && currentHash === 'payroll' ? 'bg-emerald-100 dark:bg-emerald-500/20 shadow-inner' : 'bg-transparent'}`}>
+                    <Wallet className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                  </div>
+                  <span className={`text-[10px] font-black transition-all ${pathname === '/my-profile' && currentHash === 'payroll' ? 'opacity-100' : 'opacity-70'}`}>الراتب</span>
+                </button>
 
-              <button onClick={() => { triggerHaptic(); toggleTheme(); }} className="flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group text-slate-400 hover:text-amber-500 dark:hover:text-amber-400">
-                <div className="p-1.5 rounded-xl transition-all duration-300 mb-0.5 bg-transparent group-hover:bg-amber-50 dark:group-hover:bg-amber-500/10">
-                  {isDark ? <Sun className="w-5 h-5 md:w-5.5 md:h-5.5" /> : <Moon className="w-5 h-5 md:w-5.5 md:h-5.5" />}
-                </div>
-                <span className="text-[10px] font-black opacity-70">المظهر</span>
-              </button>
+                <button onClick={() => handleNav('/kds', '')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/kds' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400'}`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/kds' ? 'bg-rose-100 dark:bg-rose-500/20 shadow-inner' : 'bg-transparent'}`}>
+                    <MonitorPlay className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                  </div>
+                  <span className={`text-[10px] font-black transition-all ${pathname === '/kds' ? 'opacity-100' : 'opacity-70'}`}>المطبخ</span>
+                </button>
 
-              <button onClick={handleLogout} className="flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group text-slate-400 hover:text-rose-600 dark:hover:text-rose-500">
-                <div className="p-1.5 rounded-xl transition-all duration-300 mb-0.5 bg-transparent group-hover:bg-rose-50 dark:group-hover:bg-rose-500/10">
-                  <LogOut className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                </div>
-                <span className="text-[10px] font-black opacity-70">خروج</span>
-              </button>
-            </>
-          )}
+                <button onClick={() => { triggerHaptic(); toggleTheme(); }} className="flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group text-slate-400 hover:text-amber-500 dark:hover:text-amber-400">
+                  <div className="p-1.5 rounded-xl transition-all duration-300 mb-0.5 bg-transparent group-hover:bg-amber-50 dark:group-hover:bg-amber-500/10">
+                    {isDark ? <Sun className="w-5 h-5 md:w-5.5 md:h-5.5" /> : <Moon className="w-5 h-5 md:w-5.5 md:h-5.5" />}
+                  </div>
+                  <span className="text-[10px] font-black opacity-70">المظهر</span>
+                </button>
 
-          {/* 🏪 أدوات مدير الفرع (تم استبدال الاعتمادات بشاشة المطبخ) 🏪 */}
-          {isBranch && (
-            <>
-              <button onClick={() => handleNav('/branch-portal', 'menu')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/branch-portal' && (!currentHash || currentHash === 'menu') ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400'}`}>
-                <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/branch-portal' && (!currentHash || currentHash === 'menu') ? 'bg-indigo-100 dark:bg-indigo-500/20 shadow-inner' : 'bg-transparent'}`}>
-                  <LayoutGrid className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                </div>
-                <span className="text-[9px] md:text-[10px] font-black">الأصناف</span>
-              </button>
+                <button onClick={handleLogout} className="flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group text-slate-400 hover:text-rose-600 dark:hover:text-rose-500">
+                  <div className="p-1.5 rounded-xl transition-all duration-300 mb-0.5 bg-transparent group-hover:bg-rose-50 dark:group-hover:bg-rose-500/10">
+                    <LogOut className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                  </div>
+                  <span className="text-[10px] font-black opacity-70">خروج</span>
+                </button>
+              </>
+            )}
 
-              <button onClick={() => handleNav('/kds', '')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/kds' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 hover:text-rose-500 dark:hover:text-rose-400'}`}>
-                <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/kds' ? 'bg-rose-100 dark:bg-rose-500/20 shadow-inner' : 'bg-transparent'}`}>
-                  <MonitorPlay className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                </div>
-                <span className="text-[9px] md:text-[10px] font-black">المطبخ</span>
-              </button>
+            {/* 🏪 أدوات مدير الفرع (مضاف فيها جرس الإشعارات المنفصل) 🏪 */}
+            {isBranch && (
+              <>
+                <button onClick={() => handleNav('/branch-portal', 'menu')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/branch-portal' && (!currentHash || currentHash === 'menu') ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400'}`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/branch-portal' && (!currentHash || currentHash === 'menu') ? 'bg-indigo-100 dark:bg-indigo-500/20 shadow-inner' : 'bg-transparent'}`}>
+                    <LayoutGrid className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black">الأصناف</span>
+                </button>
 
-              <button onClick={() => handleNav('/branch-portal', 'cart')} className="flex flex-col items-center justify-start flex-1 h-full gap-1 transition-all outline-none group relative z-10 -mt-5">
-                <div className={`relative bg-gradient-to-b from-indigo-500 to-blue-600 dark:from-indigo-500 dark:to-violet-600 p-2.5 md:p-3 rounded-full shadow-[0_10px_20px_rgba(79,70,229,0.3)] border-[3px] border-slate-50 dark:border-[#050505] transition-all duration-300 mb-0.5 ${pathname === '/branch-portal' && currentHash === 'cart' ? 'scale-105' : ''}`}>
-                  <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                  {badges.cart > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black min-w-[18px] h-[18px] flex items-center justify-center rounded-full border-2 border-slate-50 dark:border-[#050505] shadow-sm en-num">{badges.cart}</span>}
-                </div>
-                <span className={`text-[9px] md:text-[10px] font-black ${pathname === '/branch-portal' && currentHash === 'cart' ? 'text-indigo-600 dark:text-violet-400' : 'text-slate-400'}`}>السلة</span>
-              </button>
+                <button onClick={() => handleNav('/kds', '')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/kds' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 hover:text-rose-500 dark:hover:text-rose-400'}`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/kds' ? 'bg-rose-100 dark:bg-rose-500/20 shadow-inner' : 'bg-transparent'}`}>
+                    <MonitorPlay className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black">المطبخ</span>
+                </button>
 
-              <button onClick={() => handleNav('/branch-portal', 'history')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/branch-portal' && currentHash === 'history' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-sky-500 dark:hover:text-sky-400'}`}>
-                <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 relative ${pathname === '/branch-portal' && currentHash === 'history' ? 'bg-sky-100 dark:bg-sky-500/20 shadow-inner' : 'bg-transparent'}`}>
-                  <History className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                  {badges.history > 0 && <span className="absolute -top-1 -right-1 bg-sky-500 text-white text-[8px] font-black min-w-[14px] h-[14px] flex items-center justify-center rounded-full border border-white dark:border-[#121214] shadow-sm en-num">{badges.history}</span>}
-                </div>
-                <span className="text-[9px] md:text-[10px] font-black">السجل</span>
-              </button>
+                {/* 💡 مركز الإشعارات (الجرس المنفصل) 💡 */}
+                <button onClick={() => handleNav('/my-profile', 'notifications')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group relative ${pathname === '/my-profile' && currentHash === 'notifications' ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 hover:text-amber-500 dark:hover:text-amber-400'}`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 relative ${pathname === '/my-profile' && currentHash === 'notifications' ? 'bg-amber-100 dark:bg-amber-500/20 shadow-inner' : 'bg-transparent'}`}>
+                    <Bell className={`w-5 h-5 md:w-5.5 md:h-5.5 transition-colors ${pendingApprovalsCount > 0 ? 'text-amber-500 animate-custom-ring drop-shadow-md' : 'text-slate-400 group-hover:text-amber-500'}`} />
+                    {pendingApprovalsCount > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] font-black min-w-[14px] h-[14px] flex items-center justify-center rounded-full border border-white dark:border-[#121214] shadow-sm en-num">{pendingApprovalsCount}</span>}
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black">الإشعارات</span>
+                </button>
 
-              <button onClick={() => handleNav('/my-profile', 'id_card')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/my-profile' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
-                <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/my-profile' ? 'bg-emerald-100 dark:bg-emerald-500/20 shadow-inner' : 'bg-transparent'}`}>
-                  <User className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                </div>
-                <span className="text-[9px] md:text-[10px] font-black">حسابي</span>
-              </button>
+                {/* السلة المركزية العائمة */}
+                <button onClick={() => handleNav('/branch-portal', 'cart')} className="flex flex-col items-center justify-start flex-1 h-full gap-1 transition-all outline-none group relative z-10 -mt-5">
+                  <div className={`relative bg-gradient-to-b from-indigo-500 to-blue-600 dark:from-indigo-500 dark:to-violet-600 p-2.5 md:p-3 rounded-full shadow-[0_10px_20px_rgba(79,70,229,0.3)] border-[3px] border-slate-50 dark:border-[#050505] transition-all duration-300 mb-0.5 ${pathname === '/branch-portal' && currentHash === 'cart' ? 'scale-105' : ''}`}>
+                    <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                    {badges.cart > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black min-w-[18px] h-[18px] flex items-center justify-center rounded-full border-2 border-slate-50 dark:border-[#050505] shadow-sm en-num">{badges.cart}</span>}
+                  </div>
+                  <span className={`text-[9px] md:text-[10px] font-black ${pathname === '/branch-portal' && currentHash === 'cart' ? 'text-indigo-600 dark:text-violet-400' : 'text-slate-400'}`}>السلة</span>
+                </button>
 
-              <button onClick={handleLogout} className="flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group text-slate-400 hover:text-rose-600 dark:hover:text-rose-500">
-                <div className="p-1.5 rounded-xl transition-all duration-300 mb-0.5 bg-transparent group-hover:bg-rose-50 dark:group-hover:bg-rose-500/10">
-                  <LogOut className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                </div>
-                <span className="text-[9px] md:text-[10px] font-black">خروج</span>
-              </button>
-            </>
-          )}
+                {/* زر الاعتمادات الأصلي */}
+                <button onClick={() => handleNav('/my-profile', 'approvals')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group relative ${pathname === '/my-profile' && currentHash === 'approvals' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 relative ${pathname === '/my-profile' && currentHash === 'approvals' ? 'bg-emerald-100 dark:bg-emerald-500/20 shadow-inner' : 'bg-transparent'}`}>
+                    <ClipboardCheck className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                    {pendingApprovalsCount > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] font-black min-w-[14px] h-[14px] flex items-center justify-center rounded-full border border-white dark:border-[#121214] shadow-sm en-num">{pendingApprovalsCount}</span>}
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black">الاعتمادات</span>
+                </button>
 
-        </div>
-      </nav>
+                <button onClick={() => handleNav('/branch-portal', 'history')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/branch-portal' && currentHash === 'history' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-sky-500 dark:hover:text-sky-400'}`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 relative ${pathname === '/branch-portal' && currentHash === 'history' ? 'bg-sky-100 dark:bg-sky-500/20 shadow-inner' : 'bg-transparent'}`}>
+                    <History className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                    {badges.history > 0 && <span className="absolute -top-1 -right-1 bg-sky-500 text-white text-[8px] font-black min-w-[14px] h-[14px] flex items-center justify-center rounded-full border border-white dark:border-[#121214] shadow-sm en-num">{badges.history}</span>}
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black">السجل</span>
+                </button>
+
+                <button onClick={() => handleNav('/my-profile', 'id_card')} className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group ${pathname === '/my-profile' && currentHash !== 'approvals' && currentHash !== 'notifications' && currentHash !== 'payroll' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+                  <div className={`p-1.5 rounded-xl transition-all duration-300 mb-0.5 ${pathname === '/my-profile' && currentHash !== 'approvals' && currentHash !== 'notifications' && currentHash !== 'payroll' ? 'bg-emerald-100 dark:bg-emerald-500/20 shadow-inner' : 'bg-transparent'}`}>
+                    <User className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black">حسابي</span>
+                </button>
+
+                <button onClick={handleLogout} className="flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all outline-none group text-slate-400 hover:text-rose-600 dark:hover:text-rose-500">
+                  <div className="p-1.5 rounded-xl transition-all duration-300 mb-0.5 bg-transparent group-hover:bg-rose-50 dark:group-hover:bg-rose-500/10">
+                    <LogOut className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black">خروج</span>
+                </button>
+              </>
+            )}
+
+          </div>
+        </nav>
+      </>
     );
   }
 
@@ -199,6 +306,23 @@ export default function BottomDock() {
   // ==========================================
   return (
     <>
+      {/* 💡 حركة الاهتزاز للإدارة 💡 */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes custom-ring {
+          0% { transform: rotate(0); }
+          10% { transform: rotate(25deg); }
+          20% { transform: rotate(-20deg); }
+          30% { transform: rotate(15deg); }
+          40% { transform: rotate(-10deg); }
+          50% { transform: rotate(0); }
+          100% { transform: rotate(0); }
+        }
+        .animate-custom-ring {
+          animation: custom-ring 2s ease-in-out infinite;
+          transform-origin: top center;
+        }
+      `}} />
+
       <button 
         onClick={() => { triggerHaptic(); setIsDockHidden(false); }}
         className={`fixed bottom-6 right-6 z-[100000] p-4 rounded-full shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] outline-none border border-white/10 flex items-center justify-center
@@ -265,6 +389,15 @@ export default function BottomDock() {
               <BarChart3 className="w-[18px] h-[18px]" strokeWidth={isAnalytics ? 2.5 : 2} />
             </div>
             <span className={`text-[8.5px] font-black tracking-widest text-fuchsia-600 dark:text-fuchsia-400 transition-all duration-300 ${isAnalytics ? 'opacity-100 max-h-4' : 'opacity-0 max-h-0 overflow-hidden'}`}>التحليل</span>
+          </Link>
+
+          {/* 💡 مركز الإشعارات للإدارة 💡 */}
+          <Link href="/notifications" onClick={triggerHaptic} className="flex flex-col items-center justify-center w-11 h-full gap-0.5 group outline-none">
+            <div className={`p-1.5 rounded-full transition-all duration-300 ${pathname === '/notifications' ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 -translate-y-1' : 'text-slate-400 group-hover:text-amber-500'}`}>
+              <Bell className={`w-[18px] h-[18px] ${pendingOrdersCount > 0 ? 'animate-custom-ring text-amber-500' : ''}`} strokeWidth={pathname === '/notifications' ? 2.5 : 2} />
+              {pendingOrdersCount > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] font-black min-w-[14px] h-[14px] flex items-center justify-center rounded-full border border-white dark:border-[#121214] shadow-sm en-num">{pendingOrdersCount}</span>}
+            </div>
+            <span className={`text-[8.5px] font-black tracking-widest text-amber-600 dark:text-amber-400 transition-all duration-300 ${pathname === '/notifications' ? 'opacity-100 max-h-4' : 'opacity-0 max-h-0 overflow-hidden'}`}>الإشعارات</span>
           </Link>
 
           <button onClick={() => { triggerHaptic(); toggleTheme(); }} className="flex flex-col items-center justify-center w-11 h-full gap-0.5 group outline-none cursor-pointer">

@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { 
   ChefHat, Clock, Store, Package, CheckCircle2, 
   Loader2, Edit, X, Plus, Minus, MonitorPlay, Save, Layers, Trash2, ListChecks,
-  Sun, Moon, Lock, ShieldCheck, ShieldAlert
+  Sun, Moon, Lock, ShieldCheck, ShieldAlert, UtensilsCrossed, Receipt, BarChart3
 } from 'lucide-react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ar';
@@ -69,12 +69,12 @@ const playAlertSound = () => {
 // ============================================================
 
 const getOrderTypeColor = (type: string, isDark: boolean) => {
-  if (!type) return isDark ? 'bg-slate-800 text-slate-300 border-slate-600' : 'bg-slate-100 text-slate-600 border-slate-200';
-  if (type.includes('طارئ') || type.includes('نقص')) return isDark ? 'bg-rose-500/20 text-rose-400 border-rose-500/50' : 'bg-rose-100 text-rose-700 border-rose-200';
-  if (type.includes('استرجاع')) return isDark ? 'bg-amber-500/20 text-amber-400 border-amber-500/50' : 'bg-amber-100 text-amber-700 border-amber-200';
-  if (type.includes('تحويل')) return isDark ? 'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/50' : 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200';
-  if (type.includes('دعم')) return isDark ? 'bg-teal-500/20 text-teal-400 border-teal-500/50' : 'bg-teal-100 text-teal-700 border-teal-200';
-  return isDark ? 'bg-slate-800 text-slate-300 border-slate-600' : 'bg-slate-100 text-slate-600 border-slate-200'; 
+  if (!type) return isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-200 text-slate-700';
+  if (type.includes('طارئ') || type.includes('نقص')) return 'bg-rose-500 text-white';
+  if (type.includes('استرجاع')) return 'bg-amber-500 text-white';
+  if (type.includes('تحويل')) return 'bg-fuchsia-500 text-white';
+  if (type.includes('دعم')) return 'bg-teal-500 text-white';
+  return isDark ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700'; 
 };
 
 export default function KitchenDisplaySystemPage() {
@@ -101,12 +101,10 @@ export default function KitchenDisplaySystemPage() {
       const session = JSON.parse(sessionStr);
       setCurrentUser(session);
       
-      // الشيف والإدارة هم المدراء (يملكون صلاحية التعديل والتجهيز)
       if (['Admin', 'AsstManager', 'Accountant', 'Chef'].includes(session.role)) {
         setIsManager(true);
       }
       
-      // مدير الفرع
       if (session.role === 'BranchManager') {
         setIsBranchManager(true);
         setIsManager(false);
@@ -139,7 +137,6 @@ export default function KitchenDisplaySystemPage() {
       
       let finalOrders = data || [];
 
-      // مدير الفرع يشوف طلباته فقط، أما الموظفين والإدارة يشوفون الكل
       if (isBranchManager && currentUser?.name) {
         finalOrders = finalOrders.filter(order => order.branches?.name === currentUser.name);
       }
@@ -190,7 +187,7 @@ export default function KitchenDisplaySystemPage() {
   }, [currentUser, isBranchManager]);
 
   const toggleItemCompletion = (id: string, maxQty: number) => {
-    if (!isManager) return; // 💡 الموظف ومدير الفرع يُمنعون من التأشير هنا 💡
+    if (!isManager) return;
     setCompletedItems(prev => {
       const current = prev[id] || 0;
       const next = { ...prev };
@@ -354,20 +351,14 @@ export default function KitchenDisplaySystemPage() {
   };
 
   const ProgressIndicator = ({ current, max }: { current: number, max: number }) => {
-    if (max === 1) {
-      return current === 1 
-        ? <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0"/> 
-        : <div className="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 shrink-0 transition-colors"/>;
-    }
-    
-    if (max <= 10) {
+    if (max <= 5) {
       return (
-        <div className="flex items-center gap-1.5 shrink-0" dir="ltr">
+        <div className="flex items-center gap-1 shrink-0" dir="ltr">
           {Array.from({ length: max }).map((_, i) => (
-            <div key={i} className={`transition-all duration-300 rounded-full ${
+            <div key={i} className={`transition-all duration-200 rounded-full ${
               i < current 
-              ? 'w-3 h-3 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)] scale-110' 
-              : 'w-2 h-2 bg-slate-300 dark:bg-slate-700 opacity-60'
+              ? 'w-2.5 h-2.5 bg-emerald-500 shadow-sm scale-110' 
+              : 'w-2 h-2 bg-slate-300 dark:bg-slate-600'
             }`} />
           ))}
         </div>
@@ -375,236 +366,229 @@ export default function KitchenDisplaySystemPage() {
     }
     
     return (
-      <div className={`px-2.5 py-0.5 rounded-md text-[11px] font-black en-num flex items-center justify-center min-w-[45px] shrink-0 transition-colors ${
+      <div className={`px-2 py-0.5 rounded text-[10px] font-black en-num min-w-[35px] text-center shrink-0 transition-colors ${
         current === max 
-        ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.4)]' 
+        ? 'bg-emerald-500 text-white shadow-sm' 
         : current > 0 
           ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30' 
-          : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+          : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
       }`}>
-        {current} / {max}
+        {current}/{max}
       </div>
     );
   };
 
   const aggregatedData = getAggregatedData();
   
-  const isOrdersView = activeTab === 'orders' || (activeTab !== 'orders' && !aggregatedData.some((c: any) => c.name === activeTab));
-  const selectedCategory = isOrdersView ? null : aggregatedData.find((c: any) => c.name === activeTab);
+  // 💡 تحديد نوع الشاشة النشطة بذكاء 💡
+  let viewMode = 'orders';
+  let selectedCategory = null;
+
+  if (activeTab === 'summary') {
+    viewMode = 'summary';
+  } else if (activeTab !== 'orders') {
+    selectedCategory = aggregatedData.find((c: any) => c.name === activeTab);
+    if (selectedCategory) {
+      viewMode = 'category';
+    } else {
+      // إذا اختفى القسم لعدم وجود طلبات، نرجع للتكتات
+      viewMode = 'orders';
+    }
+  }
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen ${isDark ? 'bg-[#050505]' : 'bg-slate-50'} flex flex-col items-center justify-center gap-4`}>
-        <Loader2 className="w-16 h-16 text-indigo-500 animate-spin" />
-        <p className={`font-black uppercase tracking-widest animate-pulse text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>جاري تحميل الشاشة...</p>
+      <div className={`min-h-screen flex flex-col items-center justify-center gap-3 ${isDark ? 'bg-[#0a0a0f]' : 'bg-slate-50'}`}>
+        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+        <p className={`font-black text-xs uppercase tracking-widest animate-pulse ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>جاري تحميل المطبخ...</p>
       </div>
     );
   }
 
   return (
     <div className={isDark ? 'dark' : ''}>
-      <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-white font-sans flex flex-col overflow-hidden relative transition-colors duration-500 pb-[100px]" dir="rtl">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-white font-sans flex flex-col overflow-hidden relative transition-colors duration-300 pb-[80px]" dir="rtl">
         
-        <div className="bg-white dark:bg-[#0f0f13] border-b border-slate-200 dark:border-slate-800 p-4 lg:px-8 lg:py-5 flex flex-col gap-5 shrink-0 shadow-sm dark:shadow-lg relative z-20 transition-colors duration-500">
-          
-          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-4 max-w-[120rem] mx-auto w-full">
-            <div className="flex items-center gap-4">
-              <div className={`${isBranchManager ? 'bg-sky-600 shadow-[0_0_15px_rgba(14,165,233,0.5)]' : 'bg-indigo-600 shadow-[0_0_15px_rgba(79,70,229,0.5)]'} text-white p-3 rounded-[1rem] shrink-0`}>
-                <MonitorPlay className="w-7 h-7 lg:w-8 lg:h-8" />
+        {/* 🌟 هيدر شاشة المطبخ (ملموم ومدمج) 🌟 */}
+        <div className="bg-white dark:bg-[#12121a] border-b border-slate-200 dark:border-slate-800 p-3 md:p-4 shrink-0 shadow-sm relative z-20 transition-colors duration-300">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 w-full">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 p-2.5 rounded-xl shrink-0">
+                <UtensilsCrossed className="w-6 h-6" />
               </div>
               <div className="flex flex-col">
-                <h1 className="text-xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-1.5 whitespace-nowrap">
-                  {isBranchManager ? 'شاشة متابعة التجهيز' : 'شاشة المطبخ (KDS)'}
+                <h1 className="text-lg md:text-xl font-black text-slate-900 dark:text-white leading-tight">
+                  {isBranchManager ? 'متابعة التجهيز' : 'شاشة المطبخ (KDS)'}
                 </h1>
-                <p className="text-slate-500 dark:text-slate-400 font-bold text-[11px] lg:text-sm flex items-center gap-2 whitespace-nowrap">
-                  <span className={`w-2.5 h-2.5 ${isBranchManager ? 'bg-sky-500 shadow-[0_0_10px_rgba(14,165,233,0.8)]' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]'} rounded-full animate-pulse block shrink-0`}></span>
-                  <span className="mr-1">{isBranchManager ? 'تتابع طلبيات فرعك لحظياً' : 'متصل ويستقبل الطلبات لحظياً'}</span>
+                <p className="text-slate-500 dark:text-slate-400 font-bold text-[10px] flex items-center gap-1.5 mt-0.5">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                  {activeOrders.length} طلبات قيد التجهيز
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 lg:gap-5 mr-auto sm:mr-0">
-              
-              {/* 💡 الشارة التعريفية للمستخدم (بديل زر التجربة) 💡 */}
-              <div className={`px-4 py-2 lg:py-2.5 rounded-[1rem] shadow-inner flex items-center gap-2 font-black text-[12px] border ${
-                isManager 
-                ? 'bg-indigo-50 dark:bg-indigo-500/20 border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400' 
-                : 'bg-slate-100 dark:bg-[#1a1a24] border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
-              }`}>
-                {isManager ? <ShieldCheck className="w-5 h-5 shrink-0"/> : <Lock className="w-5 h-5 shrink-0"/>}
-                <span className="hidden md:flex items-center gap-1.5">
-                  <span className={isManager ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'}>{currentUser?.name || ''}</span>
-                  <span className="opacity-70">({isManager ? 'صلاحية الإجراء والتجهيز' : 'صلاحية المشاهدة فقط'})</span>
-                </span>
-              </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+              {/* 💡 أزرار التجميع مدمجة بالهيدر 💡 */}
+              {!isBranchManager && (
+                <div className="flex gap-1.5 shrink-0">
+                  <button 
+                    onClick={() => setActiveTab('orders')}
+                    className={`px-4 py-2 rounded-lg font-black text-xs transition-all whitespace-nowrap active:scale-95 flex items-center gap-1.5 ${
+                      viewMode === 'orders'
+                      ? 'bg-rose-500 text-white shadow-sm' 
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <Receipt className="w-4 h-4"/> التكتات (الفواتير)
+                  </button>
+                  
+                  {/* 💡 زر التبويب الجديد (خلاصة المجاميع) 💡 */}
+                  <button 
+                    onClick={() => setActiveTab('summary')}
+                    className={`px-4 py-2 rounded-lg font-black text-xs transition-all whitespace-nowrap active:scale-95 flex items-center gap-1.5 ${
+                      viewMode === 'summary'
+                      ? 'bg-amber-500 text-white shadow-sm' 
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <BarChart3 className="w-4 h-4"/> خلاصة المجاميع
+                  </button>
 
-              <button 
-                onClick={toggleTheme} 
-                className="p-3 lg:p-3.5 bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-slate-700 rounded-[1rem] text-slate-600 dark:text-slate-400 hover:text-amber-500 dark:hover:text-amber-500 shadow-inner transition-colors outline-none shrink-0"
-              >
-                {isDark ? <Sun className="w-5 h-5 lg:w-5 lg:h-5" /> : <Moon className="w-5 h-5 lg:w-5 lg:h-5" />}
-              </button>
-
-              <div className="text-right hidden sm:block ml-2 shrink-0">
-                <h2 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white en-num tracking-wider drop-shadow-md">{currentTime.format('HH:mm:ss')}</h2>
-                <p className="text-slate-500 dark:text-slate-400 font-bold text-xs lg:text-sm">{currentTime.format('YYYY-MM-DD | dddd')}</p>
-              </div>
-              
-              <div className="bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-slate-700 px-6 py-2 lg:px-8 lg:py-3 rounded-[1rem] flex flex-col items-center shadow-inner shrink-0">
-                <span className="text-slate-500 dark:text-slate-400 font-black text-[10px] lg:text-[12px] mb-1 uppercase tracking-widest">قيد التجهيز</span>
-                <span className="text-3xl lg:text-4xl font-black text-emerald-600 dark:text-emerald-400 leading-none drop-shadow-md">{activeOrders.length}</span>
-              </div>
+                  {aggregatedData.map((cat: any, idx: number) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setActiveTab(cat.name)}
+                      className={`px-4 py-2 rounded-lg font-black text-xs transition-all whitespace-nowrap active:scale-95 flex items-center gap-1.5 ${
+                        activeTab === cat.name 
+                        ? 'bg-indigo-600 text-white shadow-sm' 
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <ListChecks className="w-4 h-4"/> {cat.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-
-          {/* 💡 أزرار التجميع (تظهر للكل عدا مدير الفرع) 💡 */}
-          {!isBranchManager && (
-            <div className="flex bg-slate-100 dark:bg-[#050505] p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner overflow-x-auto custom-scrollbar w-full max-w-[120rem] mx-auto gap-2">
-              <button 
-                onClick={() => setActiveTab('orders')}
-                className={`whitespace-nowrap px-6 py-3 rounded-xl font-black text-[15px] flex items-center gap-2 transition-all shrink-0 outline-none active:scale-95 ${
-                  isOrdersView 
-                  ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)] border border-indigo-500' 
-                  : 'bg-white dark:bg-[#12121a] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                <Layers className="w-5 h-5"/> التكتات الفردية
-              </button>
-
-              {aggregatedData.map((cat: any, idx: number) => (
-                <button 
-                  key={idx}
-                  onClick={() => setActiveTab(cat.name)}
-                  className={`whitespace-nowrap px-6 py-3 rounded-xl font-black text-[15px] flex items-center gap-2 transition-all shrink-0 outline-none active:scale-95 ${
-                    activeTab === cat.name 
-                    ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)] border border-emerald-500' 
-                    : 'bg-white dark:bg-[#12121a] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-                  }`}
-                >
-                  <ListChecks className="w-5 h-5"/> {cat.name}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {activeOrders.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center z-10 relative">
-            <div className="bg-slate-100 dark:bg-slate-900 p-8 rounded-full mb-6 border border-slate-200 dark:border-slate-800 shadow-inner">
-              <ChefHat className="w-24 h-24 md:w-32 md:h-32 text-slate-400 dark:text-slate-600" />
+            <div className="bg-slate-100 dark:bg-slate-800/50 p-6 rounded-full mb-4">
+              <ChefHat className="w-16 h-16 text-slate-300 dark:text-slate-600" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-white mb-3 tracking-tight">لا توجد طلبيات حالياً</h2>
-            <p className="text-slate-500 dark:text-slate-400 font-bold text-sm md:text-lg max-w-md mx-auto leading-relaxed">
-              {isBranchManager ? 'لم يتم العثور على أي طلبيات تخص فرعك قيد التجهيز في المطبخ.' : 'بانتظار اعتماد طلبيات جديدة من قسم المبيعات أو الإدارة.'}
-            </p>
+            <h2 className="text-xl font-black text-slate-700 dark:text-slate-300 mb-1">المطبخ فارغ</h2>
+            <p className="text-slate-500 dark:text-slate-500 font-bold text-xs">لا توجد أي طلبيات قيد التجهيز حالياً.</p>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 z-10 relative">
-            <div className="max-w-[120rem] mx-auto w-full">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-3 sm:p-4 z-10 relative">
+            <div className="w-full">
               
-              {/* 🌟 شاشة القسم المحدد (التجميع / Matrix) 🌟 */}
-              {!isOrdersView && selectedCategory && !isBranchManager && (
-                <div className="space-y-6 w-full animate-in fade-in duration-500">
-                  <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700/80 rounded-[2rem] overflow-hidden shadow-sm dark:shadow-2xl">
-                    
-                    <div className="bg-slate-50 dark:bg-[#12121a] px-6 md:px-8 py-5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap justify-between items-center gap-4 relative">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-emerald-100 dark:bg-emerald-500/20 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-500/50">
-                          <CheckCircle2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400"/>
+              {/* 🌟 1️⃣ شاشة خلاصة المجاميع (المجموع لكل قسم وحسب الصنف) 🌟 */}
+              {viewMode === 'summary' && !isBranchManager && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in duration-300">
+                  {aggregatedData.map((category: any, idx: number) => {
+                    const catTotalQty = category.items.reduce((sum: number, item: any) => sum + item.total, 0);
+                    return (
+                      <div key={idx} className="bg-white dark:bg-[#12121a] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md">
+                        {/* رأس القسم */}
+                        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800/50 flex justify-between items-center">
+                          <h3 className="font-black text-[15px] text-indigo-700 dark:text-indigo-400 flex items-center gap-2">
+                            <Layers className="w-5 h-5"/> {category.name}
+                          </h3>
+                          <div className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-lg border border-indigo-200 dark:border-indigo-700/50 flex flex-col items-center shadow-sm">
+                            <span className="text-[9px] font-black uppercase tracking-widest opacity-80 mb-0.5">إجمالي القسم</span>
+                            <span className="text-[16px] font-black en-num leading-none">{catTotalQty}</span>
+                          </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{selectedCategory.name}</h2>
-                      </div>
-                      <span className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-sm md:text-base shadow-inner">
-                        إجمالي الأنواع: <span className="text-emerald-600 dark:text-emerald-400 en-num ml-1">{selectedCategory.items.length}</span>
-                      </span>
-                    </div>
-
-                    <div className="p-6 md:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
-                      {selectedCategory.items.map((item: any, itemIdx: number) => {
-                        const totalQty = Number(item.total) || 0;
-                        
-                        const completedQty = Object.entries(item.branches).reduce((sum: number, [branch, qty]: any) => {
-                          const branchCompletedCount = completedItems[`matrix-${selectedCategory.name}-${item.name}-${branch}`] || 0;
-                          return sum + branchCompletedCount;
-                        }, 0);
-                        
-                        const isAllBranchesCompleted = completedQty >= totalQty && totalQty > 0;
-
-                        return (
-                          <div key={itemIdx} className={`bg-slate-50 dark:bg-[#161622] border transition-colors shadow-sm dark:shadow-lg rounded-[1.5rem] flex flex-col relative overflow-hidden ${isAllBranchesCompleted ? 'border-emerald-300 dark:border-emerald-500/50' : 'border-slate-200 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-slate-500'}`}>
-                            
-                            {completedQty > 0 && !isAllBranchesCompleted && (
-                              <div className="absolute top-0 right-0 h-full bg-emerald-50/50 dark:bg-emerald-900/10 transition-all duration-500 z-0" style={{ width: `${(completedQty / totalQty) * 100}%` }}></div>
-                            )}
-
-                            <div className="p-6 relative z-10 flex flex-col h-full">
-                              <div className="flex justify-between items-start mb-6 pb-6 border-b border-slate-200 dark:border-slate-800">
-                                <h3 className={`text-lg md:text-xl font-black leading-tight transition-all ${isAllBranchesCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}`}>
-                                  {item.name}
-                                </h3>
-                                <div className={`px-4 py-2 rounded-xl flex flex-col items-center justify-center min-w-[80px] shrink-0 border transition-all ${isAllBranchesCompleted ? 'bg-transparent border-emerald-200 dark:border-emerald-900/50 text-emerald-500' : 'bg-emerald-100 dark:bg-emerald-500 text-emerald-800 dark:text-slate-950 border-emerald-200 dark:border-transparent dark:shadow-[0_0_15px_rgba(16,185,129,0.3)]'}`}>
-                                  <span className="text-3xl font-black en-num leading-none">{item.total}</span>
-                                  <span className="text-[11px] font-bold mt-1 opacity-80">{item.unit}</span>
-                                </div>
-                              </div>
-
-                              <div className="space-y-3 mt-auto">
-                                <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-                                  <p className="text-[12px] font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-2 uppercase tracking-widest">
-                                    <Store className="w-4 h-4"/> الفروع:
-                                  </p>
-                                  <span className={`text-[11px] font-black px-2 py-0.5 rounded-md en-num dir-ltr transition-colors ${
-                                    isAllBranchesCompleted 
-                                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30 shadow-sm' 
-                                    : 'bg-white text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
-                                  }`}>
-                                    {completedQty} / {totalQty}
-                                  </span>
-                                </div>
-                                
-                                {Object.entries(item.branches).map(([branch, bQty]: any, bIdx) => {
-                                  const maxBranchQty = Number(bQty);
-                                  const uniqueBranchId = `matrix-${selectedCategory.name}-${item.name}-${branch}`;
-                                  const branchCompletedQty = completedItems[uniqueBranchId] || 0;
-                                  const isBranchCompleted = branchCompletedQty >= maxBranchQty;
-
-                                  return (
-                                    <div 
-                                      key={bIdx} 
-                                      // 💡 المؤشر يشتغل فقط إذا المستخدم (إدارة/شيف) 💡
-                                      onClick={() => { if (isManager) toggleItemCompletion(uniqueBranchId, maxBranchQty); }}
-                                      className={`flex justify-between items-center px-4 py-3 rounded-xl border ${isManager ? 'cursor-pointer' : 'cursor-default'} transition-all overflow-hidden relative ${
-                                        isBranchCompleted 
-                                        ? 'border-emerald-200 dark:border-emerald-800 opacity-70' 
-                                        : `bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 ${isManager ? 'hover:border-emerald-300 dark:hover:border-emerald-600' : ''} shadow-sm`
-                                      }`}
-                                    >
-                                      {branchCompletedQty > 0 && !isBranchCompleted && (
-                                        <div className="absolute top-0 right-0 h-full bg-emerald-50 dark:bg-emerald-900/20 transition-all duration-300 z-0" style={{ width: `${(branchCompletedQty / maxBranchQty) * 100}%` }}></div>
-                                      )}
-                                      
-                                      <div className="flex items-center gap-3 relative z-10">
-                                        <ProgressIndicator current={branchCompletedQty} max={maxBranchQty} />
-                                        <span className={`font-bold text-sm md:text-base transition-all ${isBranchCompleted ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'}`}>
-                                          {branch}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
+                        {/* محتويات القسم */}
+                        <div className="p-3 space-y-2 flex-1 overflow-y-auto custom-scrollbar max-h-[60vh]">
+                          {category.items.map((item: any, iIdx: number) => (
+                            <div key={iIdx} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-[#1a1a24] rounded-xl border border-slate-100 dark:border-slate-800/80 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-colors">
+                              <span className="font-bold text-[14px] text-slate-800 dark:text-slate-200 truncate pr-2">{item.name}</span>
+                              <div className="flex items-center gap-1.5 shrink-0 bg-white dark:bg-[#12121a] px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <span className="font-black text-[16px] en-num text-emerald-600 dark:text-emerald-400">{item.total}</span>
+                                <span className="text-[10px] font-bold text-slate-400">{item.unit}</span>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
-              {/* 🌟 شاشة الطلبيات الفردية (التكتات) 🌟 */}
-              {(isOrdersView || isBranchManager) && (
-                <div className={`grid grid-cols-1 md:grid-cols-2 ${isBranchManager ? 'lg:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'} gap-6 items-start w-full`}>
+              {/* 🌟 2️⃣ شاشة القسم المحدد (Matrix) 🌟 */}
+              {viewMode === 'category' && selectedCategory && !isBranchManager && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 animate-in fade-in duration-300">
+                  {selectedCategory.items.map((item: any, itemIdx: number) => {
+                    const totalQty = Number(item.total) || 0;
+                    const completedQty = Object.entries(item.branches).reduce((sum: number, [branch, qty]: any) => {
+                      return sum + (completedItems[`matrix-${selectedCategory.name}-${item.name}-${branch}`] || 0);
+                    }, 0);
+                    const isAllBranchesCompleted = completedQty >= totalQty && totalQty > 0;
+
+                    return (
+                      <div key={itemIdx} className={`bg-white dark:bg-[#12121a] rounded-xl flex flex-col relative overflow-hidden transition-all border ${isAllBranchesCompleted ? 'border-emerald-400 shadow-sm' : 'border-slate-200 dark:border-slate-800'}`}>
+                        {completedQty > 0 && !isAllBranchesCompleted && (
+                          <div className="absolute top-0 right-0 h-full bg-emerald-50 dark:bg-emerald-900/20 transition-all duration-300 z-0" style={{ width: `${(completedQty / totalQty) * 100}%` }}></div>
+                        )}
+                        
+                        <div className="p-3 relative z-10 flex flex-col h-full">
+                          <div className="flex justify-between items-start mb-3 border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                            <h3 className={`text-[13px] font-black leading-tight pr-1 ${isAllBranchesCompleted ? 'text-emerald-600 dark:text-emerald-400 line-through opacity-70' : 'text-slate-800 dark:text-slate-200'}`}>
+                              {item.name}
+                            </h3>
+                            <div className={`px-2 py-1 rounded-md flex flex-col items-center shrink-0 border ${isAllBranchesCompleted ? 'bg-transparent border-emerald-200 text-emerald-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white border-slate-200 dark:border-slate-700'}`}>
+                              <span className="text-lg font-black en-num leading-none">{item.total}</span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5 mt-auto">
+                            {Object.entries(item.branches).map(([branch, bQty]: any, bIdx) => {
+                              const maxBranchQty = Number(bQty);
+                              const uniqueBranchId = `matrix-${selectedCategory.name}-${item.name}-${branch}`;
+                              const branchCompletedQty = completedItems[uniqueBranchId] || 0;
+                              const isBranchCompleted = branchCompletedQty >= maxBranchQty;
+
+                              return (
+                                <div 
+                                  key={bIdx} 
+                                  onClick={() => { if (isManager) toggleItemCompletion(uniqueBranchId, maxBranchQty); }}
+                                  className={`flex justify-between items-center px-2.5 py-2 rounded-lg border text-xs ${isManager ? 'cursor-pointer active:scale-[0.98]' : ''} transition-all relative overflow-hidden ${
+                                    isBranchCompleted 
+                                    ? 'border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/10 opacity-70' 
+                                    : 'bg-slate-50 dark:bg-[#1a1a24] border-slate-200 dark:border-slate-800'
+                                  }`}
+                                >
+                                  {branchCompletedQty > 0 && !isBranchCompleted && (
+                                    <div className="absolute top-0 right-0 h-full bg-emerald-100 dark:bg-emerald-800/30 transition-all duration-300 z-0" style={{ width: `${(branchCompletedQty / maxBranchQty) * 100}%` }}></div>
+                                  )}
+                                  <div className="flex items-center gap-2 relative z-10 w-full">
+                                    <div className={`w-4 h-4 rounded-full flex items-center justify-center border shrink-0 transition-colors ${isBranchCompleted ? 'bg-emerald-500 border-emerald-500' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600'}`}>
+                                      {isBranchCompleted && <CheckCircle2 className="w-3 h-3 text-white" />}
+                                    </div>
+                                    <span className={`font-bold truncate transition-all ${isBranchCompleted ? 'text-slate-500 line-through' : 'text-slate-700 dark:text-slate-300'}`}>{branch}</span>
+                                    <div className="mr-auto">
+                                      <ProgressIndicator current={branchCompletedQty} max={maxBranchQty} />
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 🌟 3️⃣ شاشة الطلبيات الفردية (تكت المطبخ المحدث) 🌟 */}
+              {viewMode === 'orders' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-start w-full animate-in fade-in duration-300">
                   {activeOrders.map((order) => {
                     const waitMinutes = currentTime.diff(dayjs(order.created_at), 'minute');
                     const isLate = waitMinutes >= 30; 
@@ -612,55 +596,54 @@ export default function KitchenDisplaySystemPage() {
                     const detailsToRender = isEditingThis ? editedDetails : order.order_details;
 
                     const totalOrderQty = detailsToRender.reduce((sum: number, d: any) => sum + (Number(d.quantity) || 0), 0);
-                    const completedOrderQty = detailsToRender.reduce((sum: number, d: any, idx: number) => {
-                      const completedCount = completedItems[`order-${order.id}-detail-${d.id || idx}`] || 0;
-                      return sum + completedCount;
-                    }, 0);
+                    const completedOrderQty = detailsToRender.reduce((sum: number, d: any, idx: number) => sum + (completedItems[`order-${order.id}-detail-${d.id || idx}`] || 0), 0);
                     const isOrderFullyCompleted = completedOrderQty >= totalOrderQty && totalOrderQty > 0;
 
+                    // تجميع المواد حسب الأقسام
                     const groupedDetails = detailsToRender.reduce((acc: any, detail: any) => {
-                      const catName = detail.items?.categories?.name || 'أصناف عامة';
+                      const catName = detail.items?.categories?.name || 'عام';
                       const catSeq = detail.items?.categories?.sequence || 999;
                       if (!acc[catName]) acc[catName] = { name: catName, sequence: catSeq, items: [] };
                       acc[catName].items.push(detail);
                       return acc;
                     }, {});
-
                     const sortedCategories = Object.values(groupedDetails).sort((a: any, b: any) => a.sequence - b.sequence);
 
                     return (
                       <div 
                         key={order.id} 
-                        className={`w-full flex flex-col rounded-[1.5rem] border-2 overflow-hidden transition-all duration-500 animate-in fade-in zoom-in-95 ${
-                          isEditingThis ? 'bg-white dark:bg-slate-900 border-amber-400 dark:border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.2)]' :
-                          isLate ? 'bg-white dark:bg-slate-900 border-rose-400 dark:border-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.2)]' : 
-                          isOrderFullyCompleted ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-400 dark:border-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.15)]' :
-                          'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-md dark:shadow-xl'
+                        className={`flex flex-col rounded-2xl overflow-hidden transition-all duration-300 shadow-lg border-2 ${
+                          isEditingThis ? 'bg-white dark:bg-[#12121a] border-amber-400' :
+                          isLate ? 'bg-white dark:bg-[#12121a] border-rose-500' : 
+                          isOrderFullyCompleted ? 'bg-emerald-50/30 dark:bg-emerald-950/20 border-emerald-500 opacity-95' :
+                          'bg-white dark:bg-[#12121a] border-slate-200 dark:border-slate-700'
                         }`}
                       >
-                        <div className={`p-5 flex justify-between items-start border-b ${
-                          isEditingThis ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50' : 
-                          isLate ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50' : 
-                          isOrderFullyCompleted ? 'bg-emerald-100/50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50' :
-                          'bg-slate-50 dark:bg-[#16161e] border-slate-200 dark:border-slate-800'
+                        <div className={`px-4 py-3 flex justify-between items-start border-b-2 border-dashed ${
+                          isEditingThis ? 'bg-amber-100 dark:bg-amber-900/50 border-amber-300 dark:border-amber-800' : 
+                          isLate ? 'bg-rose-100 dark:bg-rose-900/50 border-rose-300 dark:border-rose-800' : 
+                          isOrderFullyCompleted ? 'bg-emerald-100 dark:bg-emerald-900/50 border-emerald-300 dark:border-emerald-800' :
+                          'bg-slate-100 dark:bg-slate-800/80 border-slate-300 dark:border-slate-700'
                         }`}>
-                          <div>
-                            <h3 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mb-2.5 tracking-tight">{order.branches?.name || 'فرع مجهول'}</h3>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[11px] font-black bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm dark:shadow-inner">
-                                {order.branches?.agencies?.name || 'وكالة عامة'}
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`text-[18px] font-black truncate mb-1.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                              {order.branches?.name || 'مجهول'}
+                            </h3>
+                            <div className="flex flex-wrap gap-1.5">
+                              <span className="text-[10px] font-black bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 shadow-sm">
+                                {order.branches?.agencies?.name || 'عامة'}
                               </span>
-                              <span className={`text-[11px] font-black px-3 py-1 rounded-lg border shadow-sm ${getOrderTypeColor(order.order_type, isDark)}`}>
+                              <span className={`text-[10px] font-black px-2 py-0.5 rounded shadow-sm ${getOrderTypeColor(order.order_type, isDark)}`}>
                                 {order.order_type || 'طلب عام'}
                               </span>
                             </div>
                           </div>
                           
-                          <div className="flex flex-col items-end gap-2">
-                            <span className="text-[14px] font-black bg-slate-900 dark:bg-slate-950 text-white px-3 py-1.5 rounded-xl border border-slate-700 en-num flex items-center gap-1.5 shadow-inner">
-                              #{order.invoice_number || '0000'}
+                          <div className="flex flex-col items-end gap-1.5 shrink-0">
+                            <span className="text-[14px] font-black bg-slate-900 dark:bg-black text-white px-2.5 py-1 rounded border border-slate-700 en-num tracking-wider shadow-inner">
+                              #{order.invoice_number || '00'}
                             </span>
-                            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[12px] border shadow-inner ${isLate ? 'bg-rose-600 text-white border-rose-500 animate-pulse' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`}>
+                            <div className={`flex items-center gap-1.5 px-2 py-1 rounded font-black text-[11px] shadow-sm ${isLate ? 'bg-rose-600 text-white animate-pulse' : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600'}`}>
                               <Clock className="w-3.5 h-3.5" />
                               {calculateWaitTime(order.created_at)}
                             </div>
@@ -668,167 +651,129 @@ export default function KitchenDisplaySystemPage() {
                         </div>
 
                         {order.notes && (
-                          <div className={`px-5 py-3 border-b text-[13px] font-bold leading-relaxed whitespace-pre-wrap ${isEditingThis ? 'bg-amber-100 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300' : isLate ? 'bg-rose-100 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800/50 text-rose-800 dark:text-rose-300' : 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-300'}`}>
+                          <div className="px-3 py-2 text-[12px] font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 border-b border-amber-100 dark:border-amber-800/50">
                             ⚠️ {order.notes}
                           </div>
                         )}
 
-                        <div className="flex-1 p-4 bg-slate-50/50 dark:bg-[#0a0a0f] overflow-y-auto custom-scrollbar space-y-5 max-h-[50vh]">
-                          
-                          {/* التعديل فقط للإدارة والشيف */}
-                          {!isEditingThis && isManager && (
-                            <div className="flex justify-end mb-[-10px] mt-[-5px]">
-                              <button 
-                                onClick={() => startEditing(order)} 
-                                className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-white dark:bg-indigo-500/10 px-2 py-1 rounded-md border border-indigo-200 dark:border-indigo-500/20 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 transition-colors flex items-center gap-1 shadow-sm outline-none"
-                              >
-                                <Edit className="w-3 h-3"/> تعديل الكميات
-                              </button>
-                            </div>
-                          )}
+                        <div className="px-4 py-2 bg-slate-50 dark:bg-[#0a0a0f] border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                           <span className="text-[11px] font-black text-slate-500 uppercase">إجمالي الطلبية:</span>
+                           <span className="text-[13px] font-black bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-2 py-0.5 rounded-md en-num shadow-inner">
+                             {completedOrderQty} / {totalOrderQty}
+                           </span>
+                        </div>
 
-                          {sortedCategories.map((category: any, catIndex: number) => {
-                            
+                        <div className="flex-1 p-2.5 overflow-y-auto custom-scrollbar max-h-[45vh] space-y-3 bg-white dark:bg-[#12121a]">
+                          {sortedCategories.map((category: any, catIdx: number) => {
                             const catTotalQty = category.items.reduce((sum: number, d: any) => sum + (Number(d.quantity) || 0), 0);
-                            const catCompletedQty = category.items.reduce((sum: number, d: any, idx: number) => {
-                              return sum + (completedItems[`order-${order.id}-detail-${d.id || idx}`] || 0);
-                            }, 0);
-                            const isCatFullyCompleted = catCompletedQty >= catTotalQty && catTotalQty > 0;
+                            const catCompletedQty = category.items.reduce((sum: number, d: any, idx: number) => sum + (completedItems[`order-${order.id}-detail-${d.id || idx}`] || 0), 0);
+                            const isCatCompleted = catCompletedQty >= catTotalQty && catTotalQty > 0;
 
                             return (
-                              <div key={catIndex}>
-                                <div className="flex items-center justify-between mb-2.5 px-1 pb-1.5 border-b border-slate-200 dark:border-slate-800/80">
-                                  <h4 className={`font-black text-[12px] tracking-wide transition-colors ${
-                                    isCatFullyCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'
-                                  }`}>
+                              <div key={catIdx} className="space-y-1.5 bg-slate-50 dark:bg-[#1a1a24] rounded-xl p-2 border border-slate-100 dark:border-slate-800/50">
+                                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700/50 pb-1.5 px-1">
+                                  <h4 className={`text-[12px] font-black ${isCatCompleted ? 'text-emerald-500 line-through opacity-70' : 'text-indigo-600 dark:text-indigo-400'}`}>
                                     {category.name}
                                   </h4>
-                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-md en-num dir-ltr transition-colors border shadow-sm ${
-                                    isCatFullyCompleted 
-                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30' 
-                                    : 'bg-white text-slate-500 border-slate-200 dark:bg-[#15151e] dark:text-slate-400 dark:border-slate-700'
-                                  }`}>
-                                    {catCompletedQty} / {catTotalQty}
+                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded en-num ${isCatCompleted ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'}`}>
+                                    القسم: {catTotalQty}
                                   </span>
                                 </div>
+                                
+                                {category.items.map((detail: any, idx: number) => {
+                                  const maxDetailQty = Number(detail.quantity) || 0;
+                                  const uniqueDetailId = `order-${order.id}-detail-${detail.id || idx}`;
+                                  const currentCompletedQty = completedItems[uniqueDetailId] || 0;
+                                  const isItemCompleted = currentCompletedQty >= maxDetailQty && maxDetailQty > 0;
 
-                                <div className="space-y-2">
-                                  {category.items.map((detail: any, idx: number) => {
-                                    const maxDetailQty = Number(detail.quantity) || 0;
-                                    const uniqueDetailId = `order-${order.id}-detail-${detail.id || idx}`;
-                                    
-                                    const currentCompletedQty = completedItems[uniqueDetailId] || 0;
-                                    const isCompleted = currentCompletedQty >= maxDetailQty && maxDetailQty > 0;
+                                  return (
+                                    <div 
+                                      key={idx}
+                                      onClick={() => { if(!isEditingThis && isManager) toggleItemCompletion(uniqueDetailId, maxDetailQty); }}
+                                      className={`flex justify-between items-center p-2.5 rounded-lg border text-sm ${isManager && !isEditingThis ? 'cursor-pointer active:scale-[0.98]' : ''} transition-all relative overflow-hidden ${
+                                        isEditingThis ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700' :
+                                        isItemCompleted ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 opacity-60' :
+                                        'bg-white dark:bg-[#15151e] border-slate-200 dark:border-slate-700 shadow-sm hover:border-slate-300 dark:hover:border-slate-500'
+                                      }`}
+                                    >
+                                      {currentCompletedQty > 0 && !isItemCompleted && !isEditingThis && (
+                                        <div className="absolute top-0 right-0 h-full bg-emerald-100/50 dark:bg-emerald-800/30 transition-all duration-300 z-0" style={{ width: `${(currentCompletedQty / maxDetailQty) * 100}%` }}></div>
+                                      )}
 
-                                    return (
-                                      <div 
-                                        key={detail.id || idx} 
-                                        // 💡 المؤشر يشتغل فقط إذا المستخدم (إدارة/شيف) 💡
-                                        onClick={() => { if(!isEditingThis && isManager) toggleItemCompletion(uniqueDetailId, maxDetailQty); }}
-                                        className={`flex justify-between items-center px-3 py-2.5 rounded-xl border ${isManager ? 'cursor-pointer' : 'cursor-default'} transition-all overflow-hidden relative ${
-                                          isEditingThis 
-                                          ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600' 
-                                          : isCompleted
-                                            ? 'border-emerald-200 dark:border-emerald-800 opacity-70'
-                                            : `bg-white dark:bg-[#15151e] border-slate-200 dark:border-slate-800 ${isManager ? 'hover:border-emerald-300 dark:hover:border-emerald-600' : ''} shadow-sm`
-                                        }`}
-                                      >
-                                        
-                                        {currentCompletedQty > 0 && !isCompleted && !isEditingThis && (
-                                          <div className="absolute top-0 right-0 h-full bg-emerald-50/80 dark:bg-emerald-900/20 transition-all duration-300 z-0" style={{ width: `${(currentCompletedQty / maxDetailQty) * 100}%` }}></div>
-                                        )}
-
-                                        <div className="flex items-center gap-3 relative z-10">
-                                          {!isEditingThis && (
-                                            <ProgressIndicator current={currentCompletedQty} max={maxDetailQty} />
-                                          )}
-                                          <span className={`text-[14px] md:text-[15px] font-bold leading-tight transition-all ${isCompleted && !isEditingThis ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-white'}`}>
-                                            {detail.items?.name || 'مادة محذوفة'}
-                                          </span>
-                                        </div>
-                                        
-                                        {isEditingThis ? (
-                                          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 p-1.5 rounded-xl shrink-0 shadow-inner relative z-10">
-                                            <button onClick={() => handleDecrement(detail.id)} className="w-8 h-8 flex items-center justify-center bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/30 border border-rose-200 dark:border-rose-500/30 rounded-lg transition-all active:scale-95"><Minus className="w-4 h-4"/></button>
-                                            <span className="text-xl font-black text-amber-600 dark:text-amber-400 w-10 text-center en-num">{detail.quantity}</span>
-                                            <button onClick={() => handleIncrement(detail.id)} className="w-8 h-8 flex items-center justify-center bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/30 border border-emerald-200 dark:border-emerald-500/30 rounded-lg transition-all active:scale-95"><Plus className="w-4 h-4"/></button>
+                                      <div className="flex items-center gap-2.5 relative z-10 w-full">
+                                        {!isEditingThis && (
+                                          <div className={`w-5 h-5 rounded-full flex items-center justify-center border-2 shrink-0 transition-colors ${isItemCompleted ? 'bg-emerald-500 border-emerald-500' : 'bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600'}`}>
+                                            {isItemCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                                           </div>
-                                        ) : (
-                                          <div className="flex items-center gap-2 shrink-0 relative z-10">
-                                            <span className={`font-black px-3.5 py-1.5 rounded-lg text-[18px] md:text-[20px] en-num leading-none border transition-all ${isCompleted ? 'bg-transparent border-transparent text-emerald-600 dark:text-emerald-500 line-through' : 'bg-emerald-100 dark:bg-emerald-500 border-emerald-200 dark:border-transparent text-emerald-700 dark:text-slate-950 dark:shadow-[0_0_10px_rgba(16,185,129,0.3)]'}`}>
+                                        )}
+                                        <span className={`font-black text-[13px] leading-tight transition-all pr-1 ${isItemCompleted && !isEditingThis ? 'line-through text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>
+                                          {detail.items?.name || 'مادة محذوفة'}
+                                        </span>
+                                        
+                                        <div className="mr-auto shrink-0 flex items-center">
+                                          {isEditingThis ? (
+                                            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-1 shadow-inner">
+                                              <button onClick={() => handleDecrement(detail.id)} className="w-7 h-7 flex items-center justify-center bg-rose-50 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-md active:scale-95"><Minus className="w-4 h-4"/></button>
+                                              <span className="w-7 text-center font-black text-[15px] en-num">{detail.quantity}</span>
+                                              <button onClick={() => handleIncrement(detail.id)} className="w-7 h-7 flex items-center justify-center bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-md active:scale-95"><Plus className="w-4 h-4"/></button>
+                                            </div>
+                                          ) : (
+                                            <span className={`font-black text-[16px] en-num px-2.5 py-0.5 rounded-md border ${isItemCompleted ? 'bg-transparent border-transparent text-emerald-600' : 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400 shadow-sm'}`}>
                                               {detail.quantity}
                                             </span>
-                                          </div>
-                                        )}
+                                          )}
+                                        </div>
                                       </div>
-                                    );
-                                  })}
-                                </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             );
                           })}
                         </div>
 
-                        <div className="p-4 bg-slate-50 dark:bg-[#15151e] border-t border-slate-200 dark:border-slate-800 mt-auto flex flex-col gap-3">
-                          
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[12px] font-bold text-slate-500">إجمالي الأقسام: {sortedCategories.length}</span>
-                            {!isEditingThis && isManager && (
-                              <button 
-                                onClick={() => handleDeleteOrder(order)} 
-                                className="bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-500/20 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-500/50 px-3 py-2 rounded-lg text-[12px] font-black flex items-center gap-1.5 transition-all outline-none shadow-sm"
-                              >
-                                <Trash2 className="w-3.5 h-3.5"/> حذف نهائي
-                              </button>
-                            )}
-                          </div>
-
+                        <div className="p-3 border-t-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#1a1a24]">
                           {isManager ? (
                             isEditingThis ? (
-                              <div className="flex flex-col gap-3">
-                                <button 
-                                  onClick={() => handleSaveEdits(order)}
-                                  disabled={processingId === order.id}
-                                  className="w-full bg-amber-500 hover:bg-amber-400 text-white dark:text-slate-900 font-black text-[15px] py-3.5 rounded-[1rem] flex items-center justify-center gap-2 shadow-[0_5px_15px_rgba(245,158,11,0.3)] dark:shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all outline-none active:scale-95 disabled:opacity-50"
-                                >
-                                  {processingId === order.id ? <Loader2 className="w-5 h-5 animate-spin"/> : <Save className="w-5 h-5"/>} حفظ تعديلات الشيف
+                              <div className="flex gap-2">
+                                <button onClick={() => handleSaveEdits(order)} disabled={processingId === order.id} className="flex-1 bg-emerald-600 text-white font-black text-[13px] py-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 shadow-md">
+                                  {processingId === order.id ? <Loader2 className="w-4 h-4 animate-spin"/> : <Save className="w-4 h-4"/>} حفظ
                                 </button>
-                                <button 
-                                  onClick={cancelEditing}
-                                  className="w-full bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-black text-[14px] py-3 rounded-[1rem] border border-slate-200 dark:border-slate-600 transition-all outline-none active:scale-95 shadow-sm"
-                                >
-                                  إلغاء التعديل
+                                <button onClick={cancelEditing} className="flex-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 font-black text-[13px] py-3 rounded-xl active:scale-95 shadow-sm">
+                                  إلغاء
                                 </button>
                               </div>
                             ) : (
-                              <button 
-                                onClick={() => markAsCompleted(order)}
-                                disabled={processingId === order.id || !isOrderFullyCompleted}
-                                className={`w-full font-black text-[15px] py-4 rounded-[1rem] flex items-center justify-center gap-3 transition-all outline-none ${
-                                  isOrderFullyCompleted
-                                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_5px_15px_rgba(16,185,129,0.3)] dark:shadow-[0_0_20px_rgba(5,150,105,0.6)] ring-2 ring-emerald-400 ring-offset-2 dark:ring-offset-[#15151e] active:scale-95 cursor-pointer'
-                                  : 'bg-slate-200 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-300 dark:border-slate-800'
-                                }`}
-                              >
-                                {processingId === order.id ? (
-                                  <Loader2 className="w-5 h-5 animate-spin"/>
-                                ) : isOrderFullyCompleted ? (
-                                  <CheckCircle2 className="w-5 h-5"/>
-                                ) : (
-                                  <Lock className="w-5 h-5"/>
-                                )}
+                              <div className="flex flex-col gap-2">
+                                <button 
+                                  onClick={() => markAsCompleted(order)}
+                                  disabled={processingId === order.id || !isOrderFullyCompleted}
+                                  className={`w-full font-black text-[14px] py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all outline-none ${
+                                    isOrderFullyCompleted
+                                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 active:scale-95'
+                                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-300 dark:border-slate-700'
+                                  }`}
+                                >
+                                  {processingId === order.id ? <Loader2 className="w-5 h-5 animate-spin"/> : isOrderFullyCompleted ? <CheckCircle2 className="w-5 h-5"/> : <Lock className="w-5 h-5"/>}
+                                  {isOrderFullyCompleted ? 'تأكيد وتجهيز (ترحيل)' : 'أشر جميع المواد أولاً'}
+                                </button>
                                 
-                                {isOrderFullyCompleted ? 'تم التجهيز (إرسال للسجل)' : 'يرجى تأشير جميع المواد أولاً'}
-                              </button>
+                                <div className="flex justify-between items-center px-2 mt-1">
+                                  <button onClick={() => startEditing(order)} className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 opacity-80 hover:opacity-100 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg active:scale-95">
+                                    <Edit className="w-3.5 h-3.5"/> تعديل
+                                  </button>
+                                  <button onClick={() => handleDeleteOrder(order)} className="text-[11px] font-black text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 flex items-center gap-1.5 opacity-60 hover:opacity-100 active:scale-95">
+                                    <Trash2 className="w-3.5 h-3.5"/> حذف
+                                  </button>
+                                </div>
+                              </div>
                             )
                           ) : (
-                            <div className="w-full flex items-center justify-center gap-2 py-4 rounded-[1rem] bg-slate-200/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 shadow-inner">
-                              <Lock className="w-4 h-4" />
-                              <span className="font-black text-[13px]">{isBranchManager ? 'وضع المشاهدة الحية (شاشة فرع)' : 'وضع المشاهدة (صلاحية الإجراء للمدير فقط)'}</span>
+                            <div className="w-full text-center py-3 text-[11px] font-bold text-slate-500 bg-slate-200 dark:bg-slate-800 rounded-xl flex items-center justify-center gap-1.5">
+                              <Lock className="w-4 h-4" /> وضع المشاهدة فقط
                             </div>
                           )}
                         </div>
-
                       </div>
                     );
                   })}
@@ -839,13 +784,12 @@ export default function KitchenDisplaySystemPage() {
         )}
 
         <style dangerouslySetInnerHTML={{__html: `
-          .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+          .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
           .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
           html.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
           .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-          html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
-          .en-num { font-family: system-ui, -apple-system, sans-serif; }
+          .en-num { font-family: system-ui, -apple-system, sans-serif; direction: ltr; display: inline-block; }
         `}} />
       </div>
     </div>
